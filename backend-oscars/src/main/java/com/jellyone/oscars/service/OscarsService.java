@@ -15,10 +15,17 @@ import java.util.stream.Collectors;
 public class OscarsService {
     private final MoviesClient moviesClient;
 
-    //TODO Добавить обработку операторов
     public List<Person> getOscarLosers() {
-        // Поскольку в схеме нет операторов, возвращаем пустой список
-        return List.of();
+        // Получаем все фильмы
+        List<Movie> allMovies = moviesClient.getAllMovies();
+        
+        // Извлекаем всех сценаристов из фильмов, у которых нет Оскаров (oscarsCount = 0 или null)
+        return allMovies.stream()
+                .filter(movie -> movie.screenwriter() != null && 
+                               (movie.oscarsCount() == null || movie.oscarsCount() == 0))
+                .map(Movie::screenwriter)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     public Map<String, Object> honorMoviesByLength(double minLength, int oscarsToAdd) {

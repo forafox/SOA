@@ -56,6 +56,74 @@ public class TestDataProvider {
             }
             """;
 
+    public static final String TEST_MOVIE_WITHOUT_OSCARS_JSON = """
+            {
+                "id": 2,
+                "name": "Test Movie Without Oscars",
+                "coordinates": {
+                    "x": 5,
+                    "y": 50.0
+                },
+                "creationDate": "2024-01-01",
+                "oscarsCount": 0,
+                "goldenPalmCount": null,
+                "budget": 500000.0,
+                "genre": "FANTASY",
+                "screenwriter": {
+                    "name": "Test Writer 2",
+                    "birthday": "1995-01-01",
+                    "height": 1.8,
+                    "weight": 75,
+                    "passportID": "TEST456"
+                }
+            }
+            """;
+
+    public static final String TEST_MOVIES_ARRAY_JSON = """
+            [
+                {
+                    "id": 1,
+                    "name": "Test Movie 1",
+                    "coordinates": {
+                        "x": 10,
+                        "y": 120.5
+                    },
+                    "creationDate": "2024-01-01",
+                    "oscarsCount": 0,
+                    "goldenPalmCount": 1,
+                    "budget": 1000000.50,
+                    "genre": "ACTION",
+                    "screenwriter": {
+                        "name": "Test Writer 1",
+                        "birthday": "2000-01-01",
+                        "height": 1.7,
+                        "weight": 70,
+                        "passportID": "TEST123"
+                    }
+                },
+                {
+                    "id": 2,
+                    "name": "Test Movie 2",
+                    "coordinates": {
+                        "x": 5,
+                        "y": 50.0
+                    },
+                    "creationDate": "2024-01-01",
+                    "oscarsCount": 2,
+                    "goldenPalmCount": null,
+                    "budget": 500000.0,
+                    "genre": "FANTASY",
+                    "screenwriter": {
+                        "name": "Test Writer 2",
+                        "birthday": "1995-01-01",
+                        "height": 1.8,
+                        "weight": 75,
+                        "passportID": "TEST456"
+                    }
+                }
+            ]
+            """;
+
     public static Movie createTestMovie() {
         return new Movie(
                 1L,

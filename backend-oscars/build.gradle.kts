@@ -22,6 +22,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+
     annotationProcessor("org.projectlombok:lombok")
     implementation("org.projectlombok:lombok:1.18.28")
 
