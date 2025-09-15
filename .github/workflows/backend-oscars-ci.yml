@@ -1,0 +1,45 @@
+name: backend-oscars CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend-oscars/**'
+      - '.github/workflows/backend-oscars-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'backend-oscars/**'
+      - '.github/workflows/backend-oscars-ci.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend-oscars
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew clean build --no-daemon
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend-oscars
+          push: false
+          tags: backend-oscars:ci
+
+

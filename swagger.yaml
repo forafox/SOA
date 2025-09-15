@@ -1,0 +1,590 @@
+openapi: 3.0.3
+info:
+  title: Movies & Oscars API
+  version: 1.0.3
+  description: |
+    RESTful API для управления коллекцией фильмов и вспомогательных операций с Оскарами.
+    Второй сервис (Oscars) использует данные первого сервиса (Movies) для своих операций.
+
+servers:
+  - url: http://localhost:8080
+    description: Локальный сервер
+
+tags:
+  - name: Movies
+    description: Управление фильмами
+  - name: Oscars
+    description: Дополнительные операции с наградами и статистикой Оскаров
+
+paths:
+  /movies:
+    post:
+      tags: [Movies]
+      summary: Создать новый фильм
+      operationId: createMovie
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: x
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: y
+          in: query
+          required: true
+          schema:
+            type: number
+            maximum: 558
+        - name: oscarsCount
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: goldenPalmCount
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+        - name: budget
+          in: query
+          schema:
+            type: number
+            minimum: 0
+            exclusiveMinimum: true
+        - name: genre
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [ACTION, ADVENTURE, TRAGEDY, FANTASY]
+        - name: screenwriterName
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: screenwriterBirthday
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: screenwriterHeight
+          in: query
+          required: true
+          schema:
+            type: number
+            minimum: 0
+            exclusiveMinimum: true
+        - name: screenwriterWeight
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: screenwriterPassportID
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Фильм успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movie'
+        '422':
+          description: Ошибка валидации данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      tags: [Movies]
+      summary: Получить список фильмов
+      operationId: getMovies
+      parameters:
+        - name: name
+          in: query
+          schema:
+            type: string
+        - name: genre
+          in: query
+          schema:
+            $ref: '#/components/schemas/MovieGenre'
+        - name: sort
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Успешно возвращён список фильмов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Movie'
+
+  /movies/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+    get:
+      tags: [Movies]
+      summary: Получить фильм по ID
+      operationId: getMovieById
+      responses:
+        '200':
+          description: Фильм найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movie'
+        '204':
+          description: Фильм не найден
+
+    patch:
+      tags: [Movies]
+      summary: Частично обновить фильм по ID
+      operationId: patchMovie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoviePatch'
+      responses:
+        '200':
+          description: Фильм успешно обновлён
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movie'
+        '204':
+          description: Фильм не найден
+        '422':
+          description: Ошибка валидации данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags: [Movies]
+      summary: Удалить фильм по ID
+      operationId: deleteMovie
+      responses:
+        '204':
+          description: Фильм успешно удалён
+        '304':
+          description: Фильм не изменён
+
+  /movies/oscarsCount/{count}:
+    delete:
+      tags: [Movies]
+      summary: Удалить фильмы с указанным oscarsCount
+      operationId: deleteMoviesByOscars
+      parameters:
+        - name: count
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '204':
+          description: Фильмы успешно удалены
+        '304':
+          description: Фильмы не изменены
+
+  /movies/count/oscars-less-than/{count}:
+    get:
+      tags: [Movies]
+      summary: Количество фильмов с oscarsCount < {count}
+      operationId: countMoviesWithOscarsLessThan
+      parameters:
+        - name: count
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Успешно возвращено количество фильмов
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                example:
+                  count: 12
+
+  /movies/name-starts-with/{prefix}:
+    get:
+      tags: [Movies]
+      summary: Фильмы, название которых начинается с подстроки
+      operationId: getMoviesByNamePrefix
+      parameters:
+        - name: prefix
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        '200':
+          description: Успешно возвращён массив фильмов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Movie'
+
+  /oscars/operators/losers:
+    get:
+      tags: [Oscars]
+      summary: Получить операторов без Оскаров
+      operationId: getOscarLosers
+      responses:
+        '200':
+          description: Список операторов без Оскаров
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Person'
+        '204':
+          description: Операторов без Оскаров нет
+
+  /oscars/movies/honor-by-length/{minLength}:
+    post:
+      tags: [Oscars]
+      summary: Дополнительно наградить фильмы с длиной > minLength
+      operationId: honorMoviesByLength
+      parameters:
+        - name: minLength
+          in: path
+          required: true
+          schema:
+            type: number
+            minimum: 0
+        - name: oscarsToAdd
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Фильмы успешно обновлены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updatedCount:
+                    type: integer
+                  updatedMovies:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Movie'
+      callbacks:
+        onAwarded:
+          '{$request.body#/updatedMovies}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: object
+                      properties:
+                        movieId:
+                          type: integer
+                        newOscarsCount:
+                          type: integer
+              responses:
+                '200':
+                  description: Callback принят успешно
+
+  /oscars/movies/honor-low-oscars:
+    post:
+      tags: [Oscars]
+      summary: Наградить фильмы с минимальным количеством Оскаров
+      operationId: honorMoviesWithFewOscars
+      parameters:
+        - name: maxOscars
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: oscarsToAdd
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Фильмы успешно обновлены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updatedCount:
+                    type: integer
+                  updatedMovies:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Movie'
+      callbacks:
+        notifyAdmins:
+          '{$request.body#/updatedMovies}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: object
+                      properties:
+                        movieId:
+                          type: integer
+                        addedOscars:
+                          type: integer
+              responses:
+                '200':
+                  description: Callback принят успешно
+
+  /oscars/movies/{movieId}:
+    parameters:
+      - name: movieId
+        in: path
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+    get:
+      tags: [Oscars]
+      summary: Получить все Оскары по фильму
+      operationId: getOscarsByMovie
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Список Оскаров по фильму
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    awardId:
+                      type: integer
+                    date:
+                      type: string
+                      format: date
+                    category:
+                      type: string
+        '204':
+          description: Оскаров для фильма нет
+
+    post:
+      tags: [Oscars]
+      summary: Наградить фильм
+      operationId: addOscars
+      parameters:
+        - name: oscarsToAdd
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Фильм успешно обновлен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updatedCount:
+                    type: integer
+                  updatedMovies:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Movie'
+      callbacks:
+        notifyOscarsTeam:
+          '{$request.body}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: object
+                      properties:
+                        movieId:
+                          type: integer
+                        category:
+                          type: string
+                        date:
+                          type: string
+                          format: date
+              responses:
+                '200':
+                  description: Callback принят успешно
+
+    delete:
+      tags: [Oscars]
+      summary: Удалить все Оскары по фильму
+      operationId: deleteOscarsByMovie
+      responses:
+        '204':
+          description: Все Оскары для фильма успешно удалены
+        '304':
+          description: Фильм не найден или Оскаров нет
+
+components:
+  schemas:
+    Movie:
+      type: object
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+          minLength: 1
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+        creationDate:
+          type: string
+          format: date
+        oscarsCount:
+          type: integer
+          minimum: 1
+        goldenPalmCount:
+          type: integer
+          nullable: true
+          minimum: 1
+        budget:
+          type: number
+          nullable: true
+          minimum: 0
+          exclusiveMinimum: true
+        genre:
+          $ref: '#/components/schemas/MovieGenre'
+        screenwriter:
+          $ref: '#/components/schemas/Person'
+
+    MoviePatch:
+      type: object
+      properties:
+        name:
+          type: string
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+        oscarsCount:
+          type: integer
+          minimum: 1
+        goldenPalmCount:
+          type: integer
+          nullable: true
+          minimum: 1
+        budget:
+          type: number
+          nullable: true
+          minimum: 0
+          exclusiveMinimum: true
+        genre:
+          $ref: '#/components/schemas/MovieGenre'
+        screenwriter:
+          $ref: '#/components/schemas/Person'
+
+    Coordinates:
+      type: object
+      required: [x, y]
+      properties:
+        x:
+          type: integer
+        y:
+          type: number
+          maximum: 558
+
+    Person:
+      type: object
+      required: [name, birthday, height, weight, passportID]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        birthday:
+          type: string
+          format: date
+        height:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        weight:
+          type: integer
+          minimum: 1
+        passportID:
+          type: string
+          minLength: 1
+
+    MovieGenre:
+      type: string
+      enum: [ACTION, ADVENTURE, TRAGEDY, FANTASY]
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+
