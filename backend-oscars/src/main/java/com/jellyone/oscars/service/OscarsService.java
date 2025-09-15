@@ -15,37 +15,81 @@ import java.util.stream.Collectors;
 public class OscarsService {
     private final MoviesClient moviesClient;
 
+    //TODO Добавить обработку операторов
     public List<Person> getOscarLosers() {
         // Поскольку в схеме нет операторов, возвращаем пустой список
         return List.of();
     }
 
     public Map<String, Object> honorMoviesByLength(double minLength, int oscarsToAdd) {
-        // Получаем все фильмы и фильтруем по длине (используем координаты как длину)
-        List<Movie> movies = moviesClient.getMovies(null, null, null, 1, 100);
-        List<Movie> filteredMovies = movies.stream()
+        // Получаем все фильмы
+        List<Movie> allMovies = moviesClient.getAllMovies();
+        
+        // Фильтруем по длине (используем x и y координаты для определения длины)
+        List<Movie> filteredMovies = allMovies.stream()
                 .filter(movie -> movie.coordinates() != null && 
+                               movie.coordinates().x() != null && 
                                movie.coordinates().y() != null && 
-                               movie.coordinates().y() > minLength)
-                .collect(Collectors.toList());
+                               (movie.coordinates().x() + movie.coordinates().y()) > minLength)
+                .toList();
+
+        // Обновляем количество оскаров для каждого фильма
+        List<Movie> updatedMovies = new ArrayList<>();
+        for (Movie movie : filteredMovies) {
+            MoviePatch patch = new MoviePatch(
+                    movie.name(),
+                    movie.coordinates(),
+                    movie.oscarsCount() + oscarsToAdd,
+                    movie.goldenPalmCount(),
+                    movie.budget(),
+                    movie.genre(),
+                    movie.screenwriter()
+            );
+            
+            Movie updatedMovie = moviesClient.patchMovie(movie.id(), patch);
+            if (updatedMovie != null) {
+                updatedMovies.add(updatedMovie);
+            }
+        }
 
         Map<String, Object> result = new HashMap<>();
-        result.put("updatedCount", filteredMovies.size());
-        result.put("updatedMovies", filteredMovies);
+        result.put("updatedCount", updatedMovies.size());
+        result.put("updatedMovies", updatedMovies);
         return result;
     }
 
     public Map<String, Object> honorMoviesWithFewOscars(int maxOscars, int oscarsToAdd) {
-        // Получаем все фильмы и фильтруем по количеству оскаров
-        List<Movie> movies = moviesClient.getMovies(null, null, null, 1, 100);
-        List<Movie> filteredMovies = movies.stream()
+        // Получаем все фильмы
+        List<Movie> allMovies = moviesClient.getAllMovies();
+        
+        // Фильтруем по количеству оскаров
+        List<Movie> filteredMovies = allMovies.stream()
                 .filter(movie -> movie.oscarsCount() != null && 
                                movie.oscarsCount() <= maxOscars)
                 .collect(Collectors.toList());
 
+        // Обновляем количество оскаров для каждого фильма
+        List<Movie> updatedMovies = new ArrayList<>();
+        for (Movie movie : filteredMovies) {
+            MoviePatch patch = new MoviePatch(
+                    movie.name(),
+                    movie.coordinates(),
+                    movie.oscarsCount() + oscarsToAdd,
+                    movie.goldenPalmCount(),
+                    movie.budget(),
+                    movie.genre(),
+                    movie.screenwriter()
+            );
+            
+            Movie updatedMovie = moviesClient.patchMovie(movie.id(), patch);
+            if (updatedMovie != null) {
+                updatedMovies.add(updatedMovie);
+            }
+        }
+
         Map<String, Object> result = new HashMap<>();
-        result.put("updatedCount", filteredMovies.size());
-        result.put("updatedMovies", filteredMovies);
+        result.put("updatedCount", updatedMovies.size());
+        result.put("updatedMovies", updatedMovies);
         return result;
     }
 
@@ -56,9 +100,20 @@ public class OscarsService {
             return List.of();
         }
         
-        // Поскольку в схеме нет реальных данных об оскарах, возвращаем пустой список
-        // В реальном приложении здесь был бы запрос к базе данных оскаров
-        return List.of();
+        // Возвращаем количество оскаров как список чисел
+        List<Map<String, Object>> oscars = new ArrayList<>();
+        if (movie.oscarsCount() != null && movie.oscarsCount() > 0) {
+            for (int i = 1; i <= movie.oscarsCount(); i++) {
+                Map<String, Object> oscar = new HashMap<>();
+                oscar.put("awardId", i);
+                //TODO Просто выпилить это из АПИ
+                oscar.put("date", "2024-01-01"); // Примерная дата
+                oscar.put("category", "Best Picture"); // Примерная категория
+                oscars.add(oscar);
+            }
+        }
+        
+        return oscars;
     }
 
     public Map<String, Object> addOscars(long movieId, int oscarsToAdd) {

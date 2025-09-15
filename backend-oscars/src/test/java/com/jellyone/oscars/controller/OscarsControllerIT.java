@@ -59,6 +59,22 @@ class OscarsControllerIT {
                 .statusCode(HttpStatus.NO_CONTENT.value());
     }
 
+    @Test
+    void getOscarsByMovie_ok_whenMovieExists() {
+        // Мок-сервер возвращает фильм с оскарами для внешнего API
+        movies.enqueue(new MockResponse().setResponseCode(200)
+                .setHeader("Content-Type", "application/json")
+                .setBody(TestDataProvider.TEST_MOVIE_WITH_OSCARS_JSON));
+
+        given()
+                .when()
+                .get("/oscars/movies/{movieId}", 1)
+                .then()
+                .statusCode(HttpStatus.OK.value())
+                .contentType(ContentType.JSON);
+    }
+
+
 
     @Test
     void addOscars_ok_whenMovieExists() {
@@ -83,7 +99,7 @@ class OscarsControllerIT {
 
     @Test
     void honorByLength_ok() {
-        // Мок для GET запроса к /movies (получение списка фильмов)
+        // Мок для GET запроса к /movies (получение всех фильмов)
         movies.enqueue(new MockResponse().setResponseCode(200)
                 .setHeader("Content-Type", "application/json")
                 .setBody("[]")); // Пустой список фильмов
@@ -99,7 +115,7 @@ class OscarsControllerIT {
 
     @Test
     void honorLowOscars_ok() {
-        // Мок для GET запроса к /movies (получение списка фильмов)
+        // Мок для GET запроса к /movies (получение всех фильмов)
         movies.enqueue(new MockResponse().setResponseCode(200)
                 .setHeader("Content-Type", "application/json")
                 .setBody("[]")); // Пустой список фильмов
