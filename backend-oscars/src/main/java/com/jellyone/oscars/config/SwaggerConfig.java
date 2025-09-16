@@ -4,6 +4,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,5 +33,13 @@ public class SwaggerConfig {
                                 .name("Oscars")
                                 .description("Дополнительные операции с наградами и статистикой Оскаров")
                 ));
+    }
+
+    @Bean
+    public GroupedOpenApi oscarsApi() {
+        return GroupedOpenApi.builder()
+                .group("oscars")
+                .pathsToMatch("/oscars/**")
+                .build();
     }
 }

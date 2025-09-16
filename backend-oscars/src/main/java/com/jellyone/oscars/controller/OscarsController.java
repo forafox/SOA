@@ -1,9 +1,12 @@
 package com.jellyone.oscars.controller;
 
+import com.jellyone.oscars.model.MovieUpdateResponse;
 import com.jellyone.oscars.model.Person;
 import com.jellyone.oscars.service.OscarsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.callbacks.Callback;
+import io.swagger.v3.oas.annotations.callbacks.Callbacks;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -54,17 +57,40 @@ public class OscarsController {
             summary = "Дополнительно наградить фильмы с длиной > minLength",
             operationId = "honorMoviesByLength"
     )
+    @Callbacks({
+            @Callback(
+                    name = "onAwarded",
+                    callbackUrlExpression = "{$request.body#/updatedMovies}",
+                    operation = @Operation(
+                            summary = "Callback для уведомления о награждении",
+                            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                    required = true,
+                                    content = @Content(
+                                            mediaType = "application/json",
+                                            schema = @Schema(
+                                                    type = "object",
+                                                    description = "Данные для callback уведомления о награждении"
+                                            )
+                                    )
+                            ),
+                            responses = @ApiResponse(
+                                    responseCode = "200",
+                                    description = "Callback принят успешно"
+                            )
+                    )
+            )
+    })
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "Фильмы успешно обновлены",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(type = "object")
+                            schema = @Schema(implementation = MovieUpdateResponse.class)
                     )
             )
     })
-    public ResponseEntity<Map<String, Object>> honorMoviesByLength(
+    public ResponseEntity<MovieUpdateResponse> honorMoviesByLength(
             @Parameter(description = "Минимальная длина фильма", required = true, schema = @Schema(type = "number", minimum = "0"))
             @PathVariable double minLength,
             @Parameter(description = "Количество Оскаров для добавления", required = true, schema = @Schema(type = "integer", minimum = "1"))
@@ -73,7 +99,12 @@ public class OscarsController {
     ) {
         String callbackUrl = body == null ? null : (String) body.get("callbackUrl");
         Map<String, Object> result = service.honorMoviesByLength(minLength, oscarsToAdd, callbackUrl);
-        return ResponseEntity.ok(result);
+        
+        Integer updatedCount = (Integer) result.get("updatedCount");
+        @SuppressWarnings("unchecked")
+        List<com.jellyone.oscars.model.Movie> updatedMovies = (List<com.jellyone.oscars.model.Movie>) result.get("updatedMovies");
+        
+        return ResponseEntity.ok(new MovieUpdateResponse(updatedCount, updatedMovies));
     }
 
     @PostMapping("/oscars/movies/honor-low-oscars")
@@ -81,17 +112,40 @@ public class OscarsController {
             summary = "Наградить фильмы с минимальным количеством Оскаров",
             operationId = "honorMoviesWithFewOscars"
     )
+    @Callbacks({
+            @Callback(
+                    name = "notifyAdmins",
+                    callbackUrlExpression = "{$request.body#/updatedMovies}",
+                    operation = @io.swagger.v3.oas.annotations.Operation(
+                            summary = "Callback для уведомления администраторов",
+                            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                    required = true,
+                                    content = @Content(
+                                            mediaType = "application/json",
+                                            schema = @Schema(
+                                                    type = "object",
+                                                    description = "Данные для callback уведомления администраторов"
+                                            )
+                                    )
+                            ),
+                            responses = @ApiResponse(
+                                    responseCode = "200",
+                                    description = "Callback принят успешно"
+                            )
+                    )
+            )
+    })
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "Фильмы успешно обновлены",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(type = "object")
+                            schema = @Schema(implementation = MovieUpdateResponse.class)
                     )
             )
     })
-    public ResponseEntity<Map<String, Object>> honorMoviesWithFewOscars(
+    public ResponseEntity<MovieUpdateResponse> honorMoviesWithFewOscars(
             @Parameter(description = "Максимальное количество Оскаров", required = true, schema = @Schema(type = "integer", minimum = "1"))
             @RequestParam int maxOscars,
             @Parameter(description = "Количество Оскаров для добавления", required = true, schema = @Schema(type = "integer", minimum = "1"))
@@ -100,7 +154,12 @@ public class OscarsController {
     ) {
         String callbackUrl = body == null ? null : (String) body.get("callbackUrl");
         Map<String, Object> result = service.honorMoviesWithFewOscars(maxOscars, oscarsToAdd, callbackUrl);
-        return ResponseEntity.ok(result);
+        
+        Integer updatedCount = (Integer) result.get("updatedCount");
+        @SuppressWarnings("unchecked")
+        List<com.jellyone.oscars.model.Movie> updatedMovies = (List<com.jellyone.oscars.model.Movie>) result.get("updatedMovies");
+        
+        return ResponseEntity.ok(new MovieUpdateResponse(updatedCount, updatedMovies));
     }
 
     @GetMapping("/oscars/movies/{movieId}")
@@ -141,17 +200,40 @@ public class OscarsController {
             summary = "Наградить фильм",
             operationId = "addOscars"
     )
+    @Callbacks({
+            @Callback(
+                    name = "notifyOscarsTeam",
+                    callbackUrlExpression = "{$request.body}",
+                    operation = @io.swagger.v3.oas.annotations.Operation(
+                            summary = "Callback для уведомления команды Оскаров",
+                            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                    required = true,
+                                    content = @Content(
+                                            mediaType = "application/json",
+                                            schema = @Schema(
+                                                    type = "object",
+                                                    description = "Данные для callback уведомления команды Оскаров"
+                                            )
+                                    )
+                            ),
+                            responses = @ApiResponse(
+                                    responseCode = "200",
+                                    description = "Callback принят успешно"
+                            )
+                    )
+            )
+    })
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "Фильм успешно обновлен",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(type = "object")
+                            schema = @Schema(implementation = MovieUpdateResponse.class)
                     )
             )
     })
-    public ResponseEntity<Map<String, Object>> addOscars(
+    public ResponseEntity<MovieUpdateResponse> addOscars(
             @Parameter(description = "ID фильма", required = true, schema = @Schema(type = "integer", minimum = "1"))
             @PathVariable long movieId,
             @Parameter(description = "Количество Оскаров для добавления", required = true, schema = @Schema(type = "integer", minimum = "1"))
@@ -160,7 +242,12 @@ public class OscarsController {
     ) {
         String callbackUrl = body == null ? null : (String) body.get("callbackUrl");
         Map<String, Object> result = service.addOscars(movieId, oscarsToAdd, callbackUrl);
-        return ResponseEntity.ok(result);
+        
+        Integer updatedCount = (Integer) result.get("updatedCount");
+        @SuppressWarnings("unchecked")
+        List<com.jellyone.oscars.model.Movie> updatedMovies = (List<com.jellyone.oscars.model.Movie>) result.get("updatedMovies");
+        
+        return ResponseEntity.ok(new MovieUpdateResponse(updatedCount, updatedMovies));
     }
 
     @DeleteMapping("/oscars/movies/{movieId}")
