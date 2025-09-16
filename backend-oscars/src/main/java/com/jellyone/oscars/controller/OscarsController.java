@@ -5,7 +5,6 @@ import com.jellyone.oscars.service.OscarsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -69,9 +68,11 @@ public class OscarsController {
             @Parameter(description = "Минимальная длина фильма", required = true, schema = @Schema(type = "number", minimum = "0"))
             @PathVariable double minLength,
             @Parameter(description = "Количество Оскаров для добавления", required = true, schema = @Schema(type = "integer", minimum = "1"))
-            @RequestParam int oscarsToAdd
+            @RequestParam int oscarsToAdd,
+            @RequestBody(required = false) Map<String, Object> body
     ) {
-        Map<String, Object> result = service.honorMoviesByLength(minLength, oscarsToAdd);
+        String callbackUrl = body == null ? null : (String) body.get("callbackUrl");
+        Map<String, Object> result = service.honorMoviesByLength(minLength, oscarsToAdd, callbackUrl);
         return ResponseEntity.ok(result);
     }
 
@@ -94,9 +95,11 @@ public class OscarsController {
             @Parameter(description = "Максимальное количество Оскаров", required = true, schema = @Schema(type = "integer", minimum = "1"))
             @RequestParam int maxOscars,
             @Parameter(description = "Количество Оскаров для добавления", required = true, schema = @Schema(type = "integer", minimum = "1"))
-            @RequestParam int oscarsToAdd
+            @RequestParam int oscarsToAdd,
+            @RequestBody(required = false) Map<String, Object> body
     ) {
-        Map<String, Object> result = service.honorMoviesWithFewOscars(maxOscars, oscarsToAdd);
+        String callbackUrl = body == null ? null : (String) body.get("callbackUrl");
+        Map<String, Object> result = service.honorMoviesWithFewOscars(maxOscars, oscarsToAdd, callbackUrl);
         return ResponseEntity.ok(result);
     }
 
@@ -152,9 +155,11 @@ public class OscarsController {
             @Parameter(description = "ID фильма", required = true, schema = @Schema(type = "integer", minimum = "1"))
             @PathVariable long movieId,
             @Parameter(description = "Количество Оскаров для добавления", required = true, schema = @Schema(type = "integer", minimum = "1"))
-            @RequestParam int oscarsToAdd
+            @RequestParam int oscarsToAdd,
+            @RequestBody(required = false) Map<String, Object> body
     ) {
-        Map<String, Object> result = service.addOscars(movieId, oscarsToAdd);
+        String callbackUrl = body == null ? null : (String) body.get("callbackUrl");
+        Map<String, Object> result = service.addOscars(movieId, oscarsToAdd, callbackUrl);
         return ResponseEntity.ok(result);
     }
 

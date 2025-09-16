@@ -40,7 +40,7 @@ public class MoviesClient {
     }
 
     public List<Movie> getMovies(String name, String genre, String sort, int page, int size) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseUrl + "/movies")
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(baseUrl + "/movies")
                 .queryParam("page", page)
                 .queryParam("size", size);
         
