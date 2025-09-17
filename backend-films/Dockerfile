@@ -1,16 +1,15 @@
 # syntax=docker/dockerfile:1
 
-FROM eclipse-temurin:21-jdk AS builder
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 WORKDIR /workspace
-COPY . .
-RUN ./gradlew --no-daemon clean bootJar
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /workspace/build/libs/*-SNAPSHOT.jar /app/app.jar
-EXPOSE 8080
+COPY --from=builder /workspace/target/*.jar /app/app.jar
+EXPOSE 8081
 ENV JAVA_OPTS=""
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
-
-

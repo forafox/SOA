@@ -20,7 +20,7 @@ public class Main {
         return GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), rc);
     }
 
-    public static final String BASE_URI = "http://localhost:8080/api/";
+    public static final String BASE_URI = "http://0.0.0.0:8081/api/";
 
 
     public static void main(String[] args) {

@@ -1,13 +1,102 @@
-version: "3.9"
+version: '3.8'
+
 services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: movies-postgres
+    environment:
+      POSTGRES_DB: Movies
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - movies-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d Movies"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Films Service (Jersey/Grizzly)
+  backend-films:
+    build:
+      context: ./backend-films
+      dockerfile: Dockerfile
+    container_name: backend-films
+    ports:
+      - "8081:8081"
+    environment:
+      - DATABASE_URL=jdbc:postgresql://postgres:5432/Movies
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - movies-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/api/movies/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Backend Oscars Service (Spring Boot)
   backend-oscars:
     build:
       context: ./backend-oscars
-    image: backend-oscars:local
+      dockerfile: Dockerfile
+    container_name: backend-oscars
     ports:
       - "8080:8080"
     environment:
-      - JAVA_OPTS=
-    restart: unless-stopped
+      - SPRING_PROFILES_ACTIVE=docker
+      - MOVIES_API_BASE_URL=http://backend-films:8081/api
+    depends_on:
+      backend-films:
+        condition: service_healthy
+    networks:
+      - movies-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
+  # Frontend Service (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_MOVIES_API_URL=http://localhost:8081/api
+      - NEXT_PUBLIC_OSCARS_API_URL=http://localhost:8080
+    depends_on:
+      backend-films:
+        condition: service_healthy
+      backend-oscars:
+        condition: service_healthy
+    networks:
+      - movies-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
+volumes:
+  postgres_data:
+
+networks:
+  movies-network:
+    driver: bridge

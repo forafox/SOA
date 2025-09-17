@@ -19,6 +19,12 @@ public class MovieResource {
 
     private final MovieDAO movieDAO = new MovieDAO();
 
+    @GET
+    @Path("/health")
+    public Response health() {
+        return Response.ok("OK").build();
+    }
+
 
     @POST
     public Response create(Movie movie) {
