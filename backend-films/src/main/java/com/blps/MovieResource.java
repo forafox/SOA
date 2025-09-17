@@ -2,9 +2,6 @@ package com.blps;
 
 import com.blps.entity.Movie;
 import com.blps.entity.MovieGenre;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -28,12 +25,13 @@ public class MovieResource {
         movies.put(id, movie);
         return Response.status(Response.Status.CREATED).entity(movie).build();
     }
+
     @GET
     @Path("/{id}")
     public Response get(@PathParam("id") Long id) {
         Movie movie = movies.get(id);
         if (movie == null) {
-            return Response.noContent().build(); // 204 по твоей спецификации
+            return Response.noContent().build();
         }
         return Response.ok(movie).build();
     }
@@ -67,7 +65,7 @@ public class MovieResource {
             boolean desc = sort.contains(":desc");
             String field = sort.replace(":desc", "");
 
-            Comparator<Movie> comparator ;
+            Comparator<Movie> comparator;
 
             switch (field) {
                 case "oscarsCount":
@@ -104,7 +102,6 @@ public class MovieResource {
         }
 
 
-
         int fromIndex = (page - 1) * size;
         if (fromIndex >= result.size()) {
             return Response.ok(Collections.emptyList()).build();
@@ -113,6 +110,40 @@ public class MovieResource {
         result = result.subList(fromIndex, toIndex);
 
         return Response.ok(result).build();
+    }
+
+    @PATCH
+    @Path("/{id}")
+    public Response patch(@PathParam("id") Long id, Movie partialMovie) {
+        Movie existing = movies.get(id);
+        if (existing == null) {
+            return Response.noContent().build();
+        }
+
+        if (partialMovie.getName() != null) {
+            existing.setName(partialMovie.getName());
+        }
+        if (partialMovie.getCoordinates() != null) {
+            existing.setCoordinates(partialMovie.getCoordinates());
+        }
+        if (partialMovie.getOscarsCount() != null) {
+            existing.setOscarsCount(partialMovie.getOscarsCount());
+        }
+        if (partialMovie.getGoldenPalmCount() != null) {
+            existing.setGoldenPalmCount(partialMovie.getGoldenPalmCount());
+        }
+        if (partialMovie.getBudget() != null) {
+            existing.setBudget(partialMovie.getBudget());
+        }
+        if (partialMovie.getGenre() != null) {
+            existing.setGenre(partialMovie.getGenre());
+        }
+        if (partialMovie.getScreenwriter() != null) {
+            existing.setScreenwriter(partialMovie.getScreenwriter());
+        }
+
+        movies.put(id, existing);
+        return Response.ok(existing).build();
     }
 
 
@@ -132,7 +163,7 @@ public class MovieResource {
     @Path("/oscarsCount/{count}")
     public Response deleteByOscarsCount(@PathParam("count") int count) {
         int before = movies.size();
-        movies.values().removeIf(m -> m.getOscarsCount()  == count);
+        movies.values().removeIf(m -> m.getOscarsCount() == count);
         int after = movies.size();
         if (before != after) {
             return Response.noContent().build();
@@ -146,7 +177,7 @@ public class MovieResource {
     @Path("/count/oscars-less-than/{count}")
     public Response countMoviesWithOscarsLessThan(@PathParam("count") int count) {
         long cnt = movies.values().stream()
-                .filter(m -> m.getOscarsCount()  < count)
+                .filter(m -> m.getOscarsCount() < count)
                 .count();
         Map<String, Object> response = new HashMap<>();
         response.put("count", cnt);

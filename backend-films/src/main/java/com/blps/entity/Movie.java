@@ -1,6 +1,5 @@
 package com.blps.entity;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -13,11 +12,13 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Movie {
 
     @NotNull
     @Positive
-    private Long id; // генерируется автоматически
+    private Long id;
 
 
     private String name; // not null, not empty
@@ -29,7 +30,7 @@ public class Movie {
     private LocalDate creationDate = LocalDate.now(); // генерируется автоматически
 
 
-    private long oscarsCount; // > 0
+    private Long oscarsCount; // > 0
 
     private Long goldenPalmCount; // может быть null, > 0
 
