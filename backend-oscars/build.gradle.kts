@@ -22,13 +22,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+
     annotationProcessor("org.projectlombok:lombok")
     implementation("org.projectlombok:lombok:1.18.28")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("io.rest-assured:rest-assured:5.4.0")
-    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 }
 
 tasks.test {
