@@ -74,7 +74,7 @@ export function CreateMovieDialog({ open, onOpenChange, onMovieCreated }: Create
     }
   }
 
-  const updateFormData = (field: keyof CreateMovieData, value: any) => {
+  const updateFormData = (field: keyof CreateMovieData, value: string | number | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 

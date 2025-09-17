@@ -212,7 +212,7 @@ export function MovieOscarsCard({ movies, onMoviesUpdated }: MovieOscarsCardProp
       {movieOscars.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Оскары фильма "{selectedMovie?.name}"</CardTitle>
+          <CardTitle>Оскары фильма &quot;{selectedMovie?.name}&quot;</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="rounded-md border">
@@ -246,7 +246,7 @@ export function MovieOscarsCard({ movies, onMoviesUpdated }: MovieOscarsCardProp
           <AlertDialogHeader>
             <AlertDialogTitle>Подтвердите удаление</AlertDialogTitle>
             <AlertDialogDescription>
-              Вы уверены, что хотите удалить все Оскары у фильма "{selectedMovie?.name}"? Это действие нельзя отменить.
+              Вы уверены, что хотите удалить все Оскары у фильма &quot;{selectedMovie?.name}&quot;? Это действие нельзя отменить.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

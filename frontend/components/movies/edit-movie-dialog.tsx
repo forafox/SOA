@@ -63,7 +63,7 @@ export function EditMovieDialog({ movie, open, onOpenChange, onMovieUpdated }: E
     }
   }
 
-  const updateFormData = (field: string, value: any) => {
+  const updateFormData = (field: string, value: string | number | undefined) => {
     if (field.startsWith("coordinates.")) {
       const coordField = field.split(".")[1]
       setFormData((prev) => ({

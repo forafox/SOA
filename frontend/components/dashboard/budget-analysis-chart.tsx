@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, type TooltipProps } from "recharts"
 import type { Movie } from "@/lib/api-client"
 
 interface BudgetAnalysisChartProps {
@@ -26,15 +26,22 @@ export function BudgetAnalysisChart({ movies }: BudgetAnalysisChartProps) {
     FANTASY: "Фэнтези",
   }
 
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload
+  interface PointData {
+    name: string
+    budget: number
+    oscars: number
+    genre: keyof typeof genreLabels
+  }
+
+  const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
+    const point = payload && payload.length ? (payload[0]?.payload as PointData | undefined) : undefined
+    if (active && point) {
       return (
         <div className="bg-background border border-border rounded-lg p-3 shadow-md">
-          <p className="font-medium">{data.name}</p>
-          <p className="text-sm text-muted-foreground">Бюджет: ${data.budget.toFixed(1)}M</p>
-          <p className="text-sm text-muted-foreground">Оскары: {data.oscars}</p>
-          <p className="text-sm text-muted-foreground">Жанр: {genreLabels[data.genre as keyof typeof genreLabels]}</p>
+          <p className="font-medium">{point.name}</p>
+          <p className="text-sm text-muted-foreground">Бюджет: ${point.budget.toFixed(1)}M</p>
+          <p className="text-sm text-muted-foreground">Оскары: {point.oscars}</p>
+          <p className="text-sm text-muted-foreground">Жанр: {genreLabels[point.genre]}</p>
         </div>
       )
     }

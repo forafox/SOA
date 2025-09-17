@@ -13,6 +13,7 @@ import { SpecialSearchCard } from "./special-search-card"
 import { ErrorDisplay } from "@/components/error-display"
 import { LoadingSpinner } from "@/components/loading-spinner"
 import { apiClient, type Movie, type MovieFilters, type PaginationParams } from "@/lib/api-client"
+import { useCallback } from "react"
 import { useToast } from "@/hooks/use-toast"
 
 export function MoviesPage() {
@@ -31,7 +32,7 @@ export function MoviesPage() {
   } | null>(null)
   const { toast } = useToast()
 
-  const loadMovies = async () => {
+  const loadMovies = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -43,11 +44,11 @@ export function MoviesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [filters, pagination])
 
   useEffect(() => {
     loadMovies()
-  }, [filters, pagination])
+  }, [loadMovies])
 
   const handleSearch = () => {
     setFilters({ ...filters, name: searchTerm })
@@ -149,7 +150,7 @@ export function MoviesPage() {
         <CardHeader>
           <CardTitle>
             {specialSearchResults
-              ? `Результаты: ${specialSearchResults.type} "${specialSearchResults.query}"`
+              ? `Результаты: ${specialSearchResults.type} \"${specialSearchResults.query}\"`
               : "Список фильмов"}
           </CardTitle>
         </CardHeader>

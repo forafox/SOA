@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts"
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, type TooltipProps } from "recharts"
 import type { Movie } from "@/lib/api-client"
 
 interface GenreDistributionChartProps {
@@ -32,14 +32,15 @@ export function GenreDistributionChart({ movies }: GenreDistributionChartProps) 
 
   const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))"]
 
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload
+  interface PieDatum { name: string; value: number; percentage: string }
+  const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
+    const datum = payload && payload.length ? (payload[0]?.payload as PieDatum | undefined) : undefined
+    if (active && datum) {
       return (
         <div className="bg-background border border-border rounded-lg p-3 shadow-md">
-          <p className="font-medium">{data.name}</p>
+          <p className="font-medium">{datum.name}</p>
           <p className="text-sm text-muted-foreground">
-            {data.value} фильмов ({data.percentage}%)
+            {datum.value} фильмов ({datum.percentage}%)
           </p>
         </div>
       )

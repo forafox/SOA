@@ -71,8 +71,35 @@ export function MoviesTable({ movies, onEdit, onDelete }: MoviesTableProps) {
   const sortedMovies = [...movies].sort((a, b) => {
     if (!sortField || !sortDirection) return 0
 
-    let aValue: any = a[sortField]
-    let bValue: any = b[sortField]
+    let aValue: string | number | undefined
+    let bValue: string | number | undefined
+
+    switch (sortField) {
+      case "name":
+        aValue = a.name
+        bValue = b.name
+        break
+      case "genre":
+        aValue = a.genre
+        bValue = b.genre
+        break
+      case "oscarsCount":
+        aValue = a.oscarsCount
+        bValue = b.oscarsCount
+        break
+      case "goldenPalmCount":
+        aValue = a.goldenPalmCount ?? 0
+        bValue = b.goldenPalmCount ?? 0
+        break
+      case "budget":
+        aValue = a.budget ?? 0
+        bValue = b.budget ?? 0
+        break
+      case "creationDate":
+        aValue = new Date(a.creationDate).getTime()
+        bValue = new Date(b.creationDate).getTime()
+        break
+    }
 
     // Handle nested properties
     if (sortField === "goldenPalmCount") {
@@ -83,10 +110,10 @@ export function MoviesTable({ movies, onEdit, onDelete }: MoviesTableProps) {
       bValue = b.budget || 0
     }
 
-    // Convert to comparable values
-    if (typeof aValue === "string") {
-      aValue = aValue.toLowerCase()
-      bValue = bValue.toLowerCase()
+    // Convert to comparable values for strings
+    if (sortField === "name" || sortField === "genre") {
+      aValue = (aValue as string).toLowerCase()
+      bValue = (bValue as string).toLowerCase()
     }
 
     if (aValue < bValue) return sortDirection === "asc" ? -1 : 1
@@ -249,7 +276,7 @@ export function MoviesTable({ movies, onEdit, onDelete }: MoviesTableProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Подтвердите удаление</AlertDialogTitle>
             <AlertDialogDescription>
-              Вы уверены, что хотите удалить фильм "{movieToDelete?.name}"? Это действие нельзя отменить.
+              Вы уверены, что хотите удалить фильм &quot;{movieToDelete?.name}&quot;? Это действие нельзя отменить.
             </AlertDialogDescription>
           </AlertDialogHeader>
           {!!error && (

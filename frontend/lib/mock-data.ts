@@ -155,7 +155,8 @@ export const filterMockMovies = (filters: {
   if (filters.sort) {
     const [field, direction] = filters.sort.split(",")
     filtered.sort((a, b) => {
-      let aValue: any, bValue: any
+      let aValue: string | number | Date
+      let bValue: string | number | Date
 
       switch (field) {
         case "name":
@@ -189,7 +190,7 @@ export const filterMockMovies = (filters: {
   return filtered
 }
 
-export const paginateMockData = (data: any[], page = 1, size = 10): any[] => {
+export const paginateMockData = <T,>(data: T[], page = 1, size = 10): T[] => {
   const startIndex = (page - 1) * size
   return data.slice(startIndex, startIndex + size)
 }
