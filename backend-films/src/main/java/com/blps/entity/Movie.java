@@ -19,26 +19,12 @@ public class Movie {
     @NotNull
     @Positive
     private Long id;
-
-
     private String name; // not null, not empty
-
-
     private Coordinates coordinates; // not null
-
-
     private LocalDate creationDate = LocalDate.now(); // генерируется автоматически
-
-
     private Long oscarsCount; // > 0
-
     private Long goldenPalmCount; // может быть null, > 0
-
     private Float budget; // может быть null, > 0
-
-
     private MovieGenre genre; // not null
-
-
     private Person screenwriter;
 }

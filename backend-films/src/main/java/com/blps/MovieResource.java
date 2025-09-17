@@ -1,39 +1,47 @@
 package com.blps;
 
+import com.blps.DAO.MovieDAO;
 import com.blps.entity.Movie;
 import com.blps.entity.MovieGenre;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Path("/movies")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class MovieResource {
-    public static final Map<Long, Movie> movies = new HashMap<>();
-    private static final AtomicLong idGenerator = new AtomicLong(1);
+
+
+    private final MovieDAO movieDAO = new MovieDAO();
 
 
     @POST
     public Response create(Movie movie) {
-        long id = idGenerator.getAndIncrement();
-        movie.setId(id);
-        movies.put(id, movie);
-        return Response.status(Response.Status.CREATED).entity(movie).build();
+        try {
+            Movie created = movieDAO.create(movie);
+            return Response.status(Response.Status.CREATED).entity(created).build();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Response.serverError().build();
+        }
     }
 
     @GET
     @Path("/{id}")
     public Response get(@PathParam("id") Long id) {
-        Movie movie = movies.get(id);
-        if (movie == null) {
-            return Response.noContent().build();
+        try {
+            Movie movie = movieDAO.getById(id);
+            if (movie == null) return Response.noContent().build();
+            return Response.ok(movie).build();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Response.serverError().build();
         }
-        return Response.ok(movie).build();
     }
 
 
@@ -43,118 +51,95 @@ public class MovieResource {
                               @QueryParam("sort") String sort,
                               @QueryParam("page") @DefaultValue("1") int page,
                               @QueryParam("size") @DefaultValue("20") int size) {
+        try {
+            List<Movie> result = movieDAO.getAll();
 
-        List<Movie> result = new ArrayList<>(movies.values());
-
-
-        if (name != null && !name.isEmpty()) {
-            result = result.stream()
-                    .filter(m -> m.getName() != null && m.getName().contains(name))
-                    .collect(Collectors.toList());
-        }
-
-
-        if (genre != null) {
-            result = result.stream()
-                    .filter(m -> genre.equals(m.getGenre()))
-                    .collect(Collectors.toList());
-        }
-
-
-        if (sort != null) {
-            boolean desc = sort.contains(":desc");
-            String field = sort.replace(":desc", "");
-
-            Comparator<Movie> comparator;
-
-            switch (field) {
-                case "oscarsCount":
-                    comparator = Comparator.comparing(
-                            Movie::getOscarsCount,
-                            Comparator.nullsLast(Long::compareTo)
-                    );
-                    break;
-                case "id":
-                    comparator = Comparator.comparing(
-                            Movie::getId,
-                            Comparator.nullsLast(Long::compareTo)
-                    );
-                    break;
-                case "name":
-                    comparator = Comparator.comparing(
-                            Movie::getName,
-                            Comparator.nullsLast(String::compareTo)
-                    );
-                    break;
-                default:
-                    comparator = Comparator.comparing(
-                            Movie::getId,
-                            Comparator.nullsLast(Long::compareTo)
-                    );
-                    break;
+            // фильтр по имени
+            if (name != null && !name.isEmpty()) {
+                result = result.stream()
+                        .filter(m -> m.getName() != null && m.getName().contains(name))
+                        .collect(Collectors.toList());
             }
 
-            if (desc) comparator = comparator.reversed();
+            // фильтр по жанру
+            if (genre != null) {
+                result = result.stream()
+                        .filter(m -> genre.equals(m.getGenre()))
+                        .collect(Collectors.toList());
+            }
 
-            result = result.stream()
-                    .sorted(comparator)
-                    .collect(Collectors.toList());
+            // сортировка
+            if (sort != null) {
+                boolean desc = sort.contains(":desc");
+                String field = sort.replace(":desc", "");
+
+                Comparator<Movie> comparator;
+                switch (field) {
+                    case "oscarsCount":
+                        comparator = Comparator.comparing(Movie::getOscarsCount, Comparator.nullsLast(Long::compareTo));
+                        break;
+                    case "id":
+                        comparator = Comparator.comparing(Movie::getId, Comparator.nullsLast(Long::compareTo));
+                        break;
+                    case "name":
+                        comparator = Comparator.comparing(Movie::getName, Comparator.nullsLast(String::compareTo));
+                        break;
+                    default:
+                        comparator = Comparator.comparing(Movie::getId, Comparator.nullsLast(Long::compareTo));
+                        break;
+                }
+                if (desc) comparator = comparator.reversed();
+                result = result.stream().sorted(comparator).collect(Collectors.toList());
+            }
+
+            // пагинация
+            int fromIndex = (page - 1) * size;
+            if (fromIndex >= result.size()) return Response.ok(Collections.emptyList()).build();
+            int toIndex = Math.min(fromIndex + size, result.size());
+            result = result.subList(fromIndex, toIndex);
+
+            return Response.ok(result).build();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Response.serverError().build();
         }
-
-
-        int fromIndex = (page - 1) * size;
-        if (fromIndex >= result.size()) {
-            return Response.ok(Collections.emptyList()).build();
-        }
-        int toIndex = Math.min(fromIndex + size, result.size());
-        result = result.subList(fromIndex, toIndex);
-
-        return Response.ok(result).build();
     }
 
     @PATCH
     @Path("/{id}")
     public Response patch(@PathParam("id") Long id, Movie partialMovie) {
-        Movie existing = movies.get(id);
-        if (existing == null) {
-            return Response.noContent().build();
-        }
+        try {
+            Movie existing = movieDAO.getById(id);
+            if (existing == null) return Response.noContent().build();
 
-        if (partialMovie.getName() != null) {
-            existing.setName(partialMovie.getName());
-        }
-        if (partialMovie.getCoordinates() != null) {
-            existing.setCoordinates(partialMovie.getCoordinates());
-        }
-        if (partialMovie.getOscarsCount() != null) {
-            existing.setOscarsCount(partialMovie.getOscarsCount());
-        }
-        if (partialMovie.getGoldenPalmCount() != null) {
-            existing.setGoldenPalmCount(partialMovie.getGoldenPalmCount());
-        }
-        if (partialMovie.getBudget() != null) {
-            existing.setBudget(partialMovie.getBudget());
-        }
-        if (partialMovie.getGenre() != null) {
-            existing.setGenre(partialMovie.getGenre());
-        }
-        if (partialMovie.getScreenwriter() != null) {
-            existing.setScreenwriter(partialMovie.getScreenwriter());
-        }
+            // обновляем поля
+            if (partialMovie.getName() != null) existing.setName(partialMovie.getName());
+            if (partialMovie.getCoordinates() != null) existing.setCoordinates(partialMovie.getCoordinates());
+            if (partialMovie.getOscarsCount() != null) existing.setOscarsCount(partialMovie.getOscarsCount());
+            if (partialMovie.getGoldenPalmCount() != null)
+                existing.setGoldenPalmCount(partialMovie.getGoldenPalmCount());
+            if (partialMovie.getBudget() != null) existing.setBudget(partialMovie.getBudget());
+            if (partialMovie.getGenre() != null) existing.setGenre(partialMovie.getGenre());
+            if (partialMovie.getScreenwriter() != null) existing.setScreenwriter(partialMovie.getScreenwriter());
 
-        movies.put(id, existing);
-        return Response.ok(existing).build();
+            Movie updated = movieDAO.update(existing);
+            return Response.ok(updated).build();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Response.serverError().build();
+        }
     }
 
 
     @DELETE
     @Path("/{id}")
     public Response delete(@PathParam("id") Long id) {
-        Movie removed = movies.remove(id);
-        if (removed != null) {
-            return Response.noContent().build();
-        } else {
-            return Response.notModified().build();
+        try {
+            boolean deleted = movieDAO.deleteById(id);
+            return deleted ? Response.noContent().build() : Response.notModified().build();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Response.serverError().build();
         }
     }
 
@@ -162,13 +147,19 @@ public class MovieResource {
     @DELETE
     @Path("/oscarsCount/{count}")
     public Response deleteByOscarsCount(@PathParam("count") int count) {
-        int before = movies.size();
-        movies.values().removeIf(m -> m.getOscarsCount() == count);
-        int after = movies.size();
-        if (before != after) {
-            return Response.noContent().build();
-        } else {
-            return Response.notModified().build();
+        try {
+            List<Movie> all = movieDAO.getAll();
+            boolean anyDeleted = false;
+            for (Movie m : all) {
+                if (m.getOscarsCount() != null && m.getOscarsCount() == count) {
+                    movieDAO.deleteById(m.getId());
+                    anyDeleted = true;
+                }
+            }
+            return anyDeleted ? Response.noContent().build() : Response.notModified().build();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Response.serverError().build();
         }
     }
 
@@ -176,21 +167,31 @@ public class MovieResource {
     @GET
     @Path("/count/oscars-less-than/{count}")
     public Response countMoviesWithOscarsLessThan(@PathParam("count") int count) {
-        long cnt = movies.values().stream()
-                .filter(m -> m.getOscarsCount() < count)
-                .count();
-        Map<String, Object> response = new HashMap<>();
-        response.put("count", cnt);
-        return Response.ok(response).build();
+        try {
+            long cnt = movieDAO.getAll().stream()
+                    .filter(m -> m.getOscarsCount() != null && m.getOscarsCount() < count)
+                    .count();
+            Map<String, Object> response = new HashMap<>();
+            response.put("count", cnt);
+            return Response.ok(response).build();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Response.serverError().build();
+        }
     }
 
 
     @GET
     @Path("/name-starts-with/{prefix}")
     public Response getMoviesByNamePrefix(@PathParam("prefix") String prefix) {
-        List<Movie> result = movies.values().stream()
-                .filter(m -> m.getName() != null && m.getName().startsWith(prefix))
-                .collect(Collectors.toList());
-        return Response.ok(result).build();
+        try {
+            List<Movie> result = movieDAO.getAll().stream()
+                    .filter(m -> m.getName() != null && m.getName().startsWith(prefix))
+                    .collect(Collectors.toList());
+            return Response.ok(result).build();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Response.serverError().build();
+        }
     }
 }
