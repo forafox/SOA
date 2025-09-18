@@ -1,8 +1,16 @@
 // Простой polling механизм для проверки коллбэков
+interface CallbackData {
+  id: string
+  type: string
+  data: unknown
+  status: string
+  timestamp: string
+}
+
 class CallbackPoller {
   private static instance: CallbackPoller
-  private callbacks: any[] = []
-  private listeners: Function[] = []
+  private callbacks: CallbackData[] = []
+  private listeners: ((callbacks: CallbackData[]) => void)[] = []
 
   private constructor() {}
 
@@ -13,7 +21,7 @@ class CallbackPoller {
     return CallbackPoller.instance
   }
 
-  public addCallback(callback: any) {
+  public addCallback(callback: CallbackData) {
     console.log('📡 CallbackPoller: Adding callback:', callback)
     this.callbacks.push(callback)
     this.notifyListeners()
@@ -23,11 +31,11 @@ class CallbackPoller {
     return [...this.callbacks]
   }
 
-  public onUpdate(callback: Function) {
+  public onUpdate(callback: (callbacks: CallbackData[]) => void) {
     this.listeners.push(callback)
   }
 
-  public offUpdate(callback: Function) {
+  public offUpdate(callback: (callbacks: CallbackData[]) => void) {
     const index = this.listeners.indexOf(callback)
     if (index > -1) {
       this.listeners.splice(index, 1)

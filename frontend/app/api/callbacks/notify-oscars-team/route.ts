@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-// Простое хранилище коллбэков в памяти
-let recentCallbacks: any[] = []
+import { addCallback } from '@/lib/callback-storage'
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,21 +7,14 @@ export async function POST(request: NextRequest) {
     
     console.log('🎬 API Route: Callback notifyOscarsTeam received:', body)
     
-    // Создаем коллбэк
-    const callback = {
-      id: Math.random().toString(36).substr(2, 9),
+    // Создаем и сохраняем коллбэк
+    const callback = addCallback({
       type: 'notifyOscarsTeam',
       data: body,
-      status: 'success',
-      timestamp: new Date().toISOString()
-    }
-    
-    // Добавляем в хранилище
-    recentCallbacks.unshift(callback)
-    recentCallbacks = recentCallbacks.slice(0, 10) // Ограничиваем до 10 последних
+      status: 'success'
+    })
     
     console.log('🎬 API Route: Callback saved to recent storage:', callback.id)
-    console.log('🎬 API Route: Total callbacks in storage:', recentCallbacks.length)
     
     return NextResponse.json({ 
       success: true, 
@@ -39,7 +30,3 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Функция для получения коллбэков
-export function getRecentCallbacks() {
-  return recentCallbacks
-}

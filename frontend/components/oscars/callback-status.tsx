@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Bell, CheckCircle, XCircle, Clock } from "lucide-react"
-import { eventEmitter } from "@/lib/event-emitter"
 import { useToast } from "@/hooks/use-toast"
 
 interface CallbackStatusProps {
@@ -17,7 +16,7 @@ interface CallbackEvent {
   status: 'pending' | 'success' | 'error'
   timestamp: Date
   message: string
-  data?: any
+  data?: unknown
 }
 
 export function CallbackStatus({ className }: CallbackStatusProps) {
@@ -59,7 +58,7 @@ export function CallbackStatus({ className }: CallbackStatusProps) {
     }
   }, [toast])
 
-  const getCallbackMessage = (type: string, data: any): string => {
+  const getCallbackMessage = (type: string, data: unknown): string => {
     switch (type) {
       case 'onAwarded':
         return `Награждение по длине: обработано ${data?.updatedMovies?.length || 0} фильмов`

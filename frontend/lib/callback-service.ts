@@ -1,4 +1,3 @@
-import { useToast } from "@/hooks/use-toast"
 import { eventEmitter } from "./event-emitter"
 
 export interface CallbackData {
@@ -7,12 +6,12 @@ export interface CallbackData {
   addedOscars?: number
   category?: string
   date?: string
-  updatedMovies?: any[]
+  updatedMovies?: unknown[]
 }
 
 export class CallbackService {
   private static instance: CallbackService
-  private toast: any = null
+  private toast: ((options: { title: string; description: string; duration?: number; className?: string }) => void) | null = null
 
   private constructor() {}
 
@@ -23,7 +22,7 @@ export class CallbackService {
     return CallbackService.instance
   }
 
-  public setToast(toast: any) {
+  public setToast(toast: (options: { title: string; description: string; duration?: number; className?: string }) => void) {
     this.toast = toast
   }
 

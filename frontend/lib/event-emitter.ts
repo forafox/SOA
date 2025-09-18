@@ -1,7 +1,7 @@
 // Простой event emitter для отправки событий из API routes в UI
 class EventEmitter {
   private static instance: EventEmitter
-  private listeners: Map<string, Function[]> = new Map()
+  private listeners: Map<string, ((data: unknown) => void)[]> = new Map()
 
   private constructor() {}
 
@@ -12,14 +12,14 @@ class EventEmitter {
     return EventEmitter.instance
   }
 
-  public on(event: string, callback: Function) {
+  public on(event: string, callback: (data: unknown) => void) {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, [])
     }
     this.listeners.get(event)!.push(callback)
   }
 
-  public off(event: string, callback: Function) {
+  public off(event: string, callback: (data: unknown) => void) {
     if (this.listeners.has(event)) {
       const callbacks = this.listeners.get(event)!
       const index = callbacks.indexOf(callback)
@@ -29,7 +29,7 @@ class EventEmitter {
     }
   }
 
-  public emit(event: string, data: any) {
+  public emit(event: string, data: unknown) {
     console.log('📡 EventEmitter: Emitting event:', event, data)
     if (this.listeners.has(event)) {
       this.listeners.get(event)!.forEach(callback => {

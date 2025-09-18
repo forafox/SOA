@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getRecentCallbacks } from '../notify-oscars-team/route'
+import { getRecentCallbacks } from '@/lib/callback-storage'
 
 export async function GET() {
   const callbacks = getRecentCallbacks()

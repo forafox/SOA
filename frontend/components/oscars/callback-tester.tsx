@@ -76,7 +76,7 @@ export function CallbackTester() {
       } else {
         throw new Error('Failed to send test callback')
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Ошибка теста",
         description: "Не удалось отправить тестовый коллбэк",

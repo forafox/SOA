@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Clock, CheckCircle, XCircle } from "lucide-react"
-import { eventEmitter } from "@/lib/event-emitter"
+import { Clock } from "lucide-react"
 
 interface CallbackPendingProps {
   className?: string
@@ -12,7 +11,7 @@ interface CallbackPendingProps {
 
 export function CallbackPending({ className }: CallbackPendingProps) {
   const [pendingCallbacks, setPendingCallbacks] = useState<Set<string>>(new Set())
-  const [completedCallbacks, setCompletedCallbacks] = useState<Set<string>>(new Set())
+  const [, setCompletedCallbacks] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     // Отслеживаем когда начинается операция, которая должна вызвать коллбэк

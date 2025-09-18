@@ -16,7 +16,7 @@ export function GlobalCallbackNotifications() {
       console.log('🌍 GlobalCallbackNotifications: Event type:', event.type)
       console.log('🌍 GlobalCallbackNotifications: Event detail:', event.detail)
       
-      const { type, data, status = 'success' } = eventData
+      const { type, data } = eventData
       
       // Показываем toast уведомление в зависимости от типа коллбэка
       console.log('🌍 GlobalCallbackNotifications: Processing callback type:', type)
