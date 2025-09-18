@@ -65,7 +65,7 @@ export function MovieOscarsCard({ movies, onMoviesUpdated }: MovieOscarsCardProp
 
       toast({
         title: "Успех",
-        description: `Добавлено ${oscarsToAdd} Оскаров фильму "${selectedMovie?.name}"`,
+        description: `Добавлено ${result.updatedCount || oscarsToAdd} Оскаров фильму "${selectedMovie?.name}"`,
       })
 
       setOscarsToAdd("")
