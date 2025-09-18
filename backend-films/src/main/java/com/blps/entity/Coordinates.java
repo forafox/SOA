@@ -13,5 +13,4 @@ public class Coordinates {
     private Long id;
     private Long x;
     private Double y;
-
 }

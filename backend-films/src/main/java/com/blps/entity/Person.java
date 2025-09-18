@@ -21,9 +21,7 @@ public class Person {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date birthday;
 
-
     private double height;
-
 
     private long weight;
 
