@@ -287,6 +287,7 @@ class MoviesOscarsApiClient {
   async honorMoviesByLength(
     minLength: number,
     oscarsToAdd: number,
+    callbackUrl?: string,
   ): Promise<{
     updatedCount: number
     updatedMovies: Movie[]
@@ -307,8 +308,14 @@ class MoviesOscarsApiClient {
     const params = new URLSearchParams()
     params.append("oscarsToAdd", oscarsToAdd.toString())
 
+    const body = callbackUrl ? { callbackUrl } : undefined
+
     const response = await fetch(`${this.oscarsBaseUrl}/oscars/movies/honor-by-length/${minLength}?${params}`, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: body ? JSON.stringify(body) : undefined,
     })
     return this.handleResponse<{ updatedCount: number; updatedMovies: Movie[] }>(response)
   }
@@ -316,6 +323,7 @@ class MoviesOscarsApiClient {
   async honorMoviesWithFewOscars(
     maxOscars: number,
     oscarsToAdd: number,
+    callbackUrl?: string,
   ): Promise<{
     updatedCount: number
     updatedMovies: Movie[]
@@ -336,8 +344,14 @@ class MoviesOscarsApiClient {
     params.append("maxOscars", maxOscars.toString())
     params.append("oscarsToAdd", oscarsToAdd.toString())
 
+    const body = callbackUrl ? { callbackUrl } : undefined
+
     const response = await fetch(`${this.oscarsBaseUrl}/oscars/movies/honor-low-oscars?${params}`, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: body ? JSON.stringify(body) : undefined,
     })
     return this.handleResponse<{ updatedCount: number; updatedMovies: Movie[] }>(response)
   }
@@ -359,6 +373,7 @@ class MoviesOscarsApiClient {
   async addOscarsToMovie(
     movieId: number,
     oscarsToAdd: number,
+    callbackUrl?: string,
   ): Promise<{
     updatedCount: number
     updatedMovies: Movie[]
@@ -378,8 +393,14 @@ class MoviesOscarsApiClient {
     const params = new URLSearchParams()
     params.append("oscarsToAdd", oscarsToAdd.toString())
 
+    const body = callbackUrl ? { callbackUrl } : undefined
+
     const response = await fetch(`${this.oscarsBaseUrl}/oscars/movies/${movieId}?${params}`, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: body ? JSON.stringify(body) : undefined,
     })
     return this.handleResponse<{ updatedCount: number; updatedMovies: Movie[] }>(response)
   }

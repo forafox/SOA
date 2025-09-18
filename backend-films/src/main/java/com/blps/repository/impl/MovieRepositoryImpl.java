@@ -41,7 +41,7 @@ public class MovieRepositoryImpl implements MovieRepository {
                 String sqlPerson = "INSERT INTO person (name, birthday, height, weight, passport_id) VALUES (?, ?, ?, ?, ?) RETURNING id";
                 try (PreparedStatement stmt = conn.prepareStatement(sqlPerson)) {
                     stmt.setString(1, p.name());
-                    stmt.setDate(2, p.birthday() != null ? new java.sql.Date(p.birthday().getTime()) : null);
+                    stmt.setDate(2, p.birthday() != null ? java.sql.Date.valueOf(p.birthday()) : null);
                     stmt.setDouble(3, p.height());
                     stmt.setLong(4, p.weight());
                     stmt.setString(5, p.passportID());
@@ -139,7 +139,7 @@ public class MovieRepositoryImpl implements MovieRepository {
                 String sqlPerson = "UPDATE person SET name = ?, birthday = ?, height = ?, weight = ?, passport_id = ? WHERE id = ?";
                 try (PreparedStatement stmt = conn.prepareStatement(sqlPerson)) {
                     stmt.setString(1, p.name());
-                    stmt.setDate(2, p.birthday() != null ? new java.sql.Date(p.birthday().getTime()) : null);
+                    stmt.setDate(2, p.birthday() != null ? java.sql.Date.valueOf(p.birthday()) : null);
                     stmt.setDouble(3, p.height());
                     stmt.setLong(4, p.weight());
                     stmt.setString(5, p.passportID());
@@ -214,7 +214,7 @@ public class MovieRepositoryImpl implements MovieRepository {
             Person p = new Person(
                 personId,
                 name,
-                rs.getDate("p_birthday"),
+                rs.getDate("p_birthday") != null ? rs.getDate("p_birthday").toLocalDate() : null,
                 rs.getDouble("p_height"),
                 rs.getLong("p_weight"),
                 rs.getString("p_passport")

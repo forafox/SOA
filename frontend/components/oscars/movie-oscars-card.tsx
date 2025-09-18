@@ -24,6 +24,7 @@ import { ErrorDisplay } from "@/components/error-display"
 import { LoadingSpinner } from "@/components/loading-spinner"
 import { apiClient, type Movie, type OscarAward } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
+import { callbackService } from "@/lib/callback-service"
 
 interface MovieOscarsCardProps {
   movies: Movie[]
@@ -38,6 +39,9 @@ export function MovieOscarsCard({ movies, onMoviesUpdated }: MovieOscarsCardProp
   const [error, setError] = useState<unknown>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const { toast } = useToast()
+
+  // Инициализируем callback service с toast
+  callbackService.setToast(toast)
 
   const selectedMovie = movies.find((m) => m.id.toString() === selectedMovieId)
 
@@ -54,7 +58,20 @@ export function MovieOscarsCard({ movies, onMoviesUpdated }: MovieOscarsCardProp
     try {
       setLoading((prev) => ({ ...prev, add: true }))
       setError(null)
-      const result = await apiClient.addOscarsToMovie(Number.parseInt(selectedMovieId), Number.parseInt(oscarsToAdd))
+      
+      // Отправляем событие о начале операции
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('operation-start', {
+          detail: { operationId: 'notifyOscarsTeam' }
+        }))
+      }
+      
+      const callbackUrls = callbackService.getCallbackUrls()
+      const result = await apiClient.addOscarsToMovie(
+        Number.parseInt(selectedMovieId), 
+        Number.parseInt(oscarsToAdd),
+        callbackUrls.notifyOscarsTeam
+      )
 
       // Update movies list
       const updatedMovies = movies.map((movie) => {

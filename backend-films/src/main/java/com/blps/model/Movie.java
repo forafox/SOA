@@ -3,6 +3,7 @@ package com.blps.model;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.time.LocalDate;
 
@@ -20,10 +21,10 @@ public class Movie {
     
     private LocalDate creationDate = LocalDate.now();
     
-    @Positive
+    @PositiveOrZero
     private Long oscarsCount;
     
-    @Positive
+    @PositiveOrZero
     private Long goldenPalmCount;
     
     @Positive
@@ -89,8 +90,8 @@ public class Movie {
     }
 
     public void setOscarsCount(Long oscarsCount) {
-        if (oscarsCount != null && oscarsCount <= 0) {
-            throw new IllegalArgumentException("oscarsCount must be positive");
+        if (oscarsCount != null && oscarsCount < 0) {
+            throw new IllegalArgumentException("oscarsCount must be non-negative");
         }
         this.oscarsCount = oscarsCount;
     }
@@ -100,8 +101,8 @@ public class Movie {
     }
 
     public void setGoldenPalmCount(Long goldenPalmCount) {
-        if (goldenPalmCount != null && goldenPalmCount <= 0) {
-            throw new IllegalArgumentException("goldenPalmCount must be positive");
+        if (goldenPalmCount != null && goldenPalmCount < 0) {
+            throw new IllegalArgumentException("goldenPalmCount must be non-negative");
         }
         this.goldenPalmCount = goldenPalmCount;
     }

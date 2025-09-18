@@ -7,6 +7,9 @@ import { Award, Users, TrendingUp, ChevronLeft, ChevronRight } from "lucide-reac
 import { OscarLosersCard } from "./oscar-losers-card"
 import { HonorMoviesCard } from "./honor-movies-card"
 import { MovieOscarsCard } from "./movie-oscars-card"
+import { CallbackStatus } from "./callback-status"
+import { CallbackTester } from "./callback-tester"
+import { CallbackPending } from "./callback-pending"
 import { ErrorDisplay } from "@/components/error-display"
 import { LoadingSpinner } from "@/components/loading-spinner"
 import { apiClient, type Movie, type PaginationParams } from "@/lib/api-client"
@@ -66,7 +69,7 @@ export function OscarsPage() {
       </div>
 
       <Tabs defaultValue="honor" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="honor" className="flex items-center gap-2">
             <Award className="h-4 w-4" />
             Награждение
@@ -78,6 +81,10 @@ export function OscarsPage() {
           <TabsTrigger value="movies" className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4" />
             Оскары по фильмам
+          </TabsTrigger>
+          <TabsTrigger value="callbacks" className="flex items-center gap-2">
+            <Award className="h-4 w-4" />
+            Коллбэки
           </TabsTrigger>
         </TabsList>
 
@@ -137,6 +144,12 @@ export function OscarsPage() {
               )}
             </>
           )}
+        </TabsContent>
+
+        <TabsContent value="callbacks" className="space-y-6">
+          <CallbackPending />
+          <CallbackTester />
+          <CallbackStatus />
         </TabsContent>
       </Tabs>
     </div>

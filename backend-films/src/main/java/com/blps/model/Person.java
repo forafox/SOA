@@ -1,17 +1,15 @@
 package com.blps.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public record Person(
     Long id,
     @NotBlank
     String name,
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    Date birthday,
+    LocalDate birthday,
     @Positive
     double height,
     @Positive

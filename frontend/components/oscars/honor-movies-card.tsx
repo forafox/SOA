@@ -11,6 +11,7 @@ import { ErrorDisplay } from "@/components/error-display"
 import { LoadingSpinner } from "@/components/loading-spinner"
 import { apiClient, type Movie } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
+import { callbackService } from "@/lib/callback-service"
 
 interface HonorMoviesCardProps {
   movies: Movie[]
@@ -23,6 +24,9 @@ export function HonorMoviesCard({ movies, onMoviesUpdated }: HonorMoviesCardProp
   const [loading, setLoading] = useState({ byLength: false, fewOscars: false })
   const [error, setError] = useState<unknown>(null)
   const { toast } = useToast()
+
+  // Инициализируем callback service с toast
+  callbackService.setToast(toast)
 
   const handleHonorByLength = async () => {
     if (!lengthForm.minLength || !lengthForm.oscarsToAdd) {
@@ -37,9 +41,19 @@ export function HonorMoviesCard({ movies, onMoviesUpdated }: HonorMoviesCardProp
     try {
       setLoading((prev) => ({ ...prev, byLength: true }))
       setError(null)
+      
+      // Отправляем событие о начале операции
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('operation-start', {
+          detail: { operationId: 'onAwarded' }
+        }))
+      }
+      
+      const callbackUrls = callbackService.getCallbackUrls()
       const result = await apiClient.honorMoviesByLength(
         Number.parseFloat(lengthForm.minLength),
         Number.parseInt(lengthForm.oscarsToAdd),
+        callbackUrls.onAwarded,
       )
 
       // Update movies list with updated movies
@@ -75,9 +89,19 @@ export function HonorMoviesCard({ movies, onMoviesUpdated }: HonorMoviesCardProp
     try {
       setLoading((prev) => ({ ...prev, fewOscars: true }))
       setError(null)
+      
+      // Отправляем событие о начале операции
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('operation-start', {
+          detail: { operationId: 'notifyAdmins' }
+        }))
+      }
+      
+      const callbackUrls = callbackService.getCallbackUrls()
       const result = await apiClient.honorMoviesWithFewOscars(
         Number.parseInt(fewOscarsForm.maxOscars),
         Number.parseInt(fewOscarsForm.oscarsToAdd),
+        callbackUrls.notifyAdmins,
       )
 
       // Update movies list with updated movies

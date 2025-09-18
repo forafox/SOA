@@ -91,6 +91,25 @@ public class MovieController {
         }
     }
 
+    @PUT
+    @Path("/{id}")
+    public Response put(@PathParam("id") Long id, Movie partialMovie) {
+        System.out.println("Controller: Updating movie with ID - " + id + " via PUT");
+        try {
+            Movie updated = movieService.updateMovie(id, partialMovie);
+            if (updated == null) {
+                System.out.println("Controller: Movie not found for update");
+                return Response.noContent().build();
+            }
+            System.out.println("Controller: Movie updated successfully via PUT");
+            return Response.ok(updated).build();
+        } catch (SQLException e) {
+            System.err.println("Controller: Error updating movie via PUT: " + e.getMessage());
+            e.printStackTrace();
+            return Response.serverError().build();
+        }
+    }
+
     @DELETE
     @Path("/{id}")
     public Response delete(@PathParam("id") Long id) {

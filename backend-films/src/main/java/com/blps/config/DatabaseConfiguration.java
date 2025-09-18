@@ -8,17 +8,16 @@ public class DatabaseConfiguration {
 
     private DatabaseConfiguration() {}
 
-    private static final String URL = "jdbc:postgresql://localhost:5432/Movies";
+    private static final String URL = "jdbc:postgresql://localhost:5432/";
     private static final String USER = "postgres";
     private static final String PASSWORD = "postgres";
 
     static {
         try {
-            DriverManager.getConnection(URL);
+            Class.forName("org.postgresql.Driver");
             System.out.println("Database connection initialized successfully");
-        } catch (SQLException e) {
-            System.err.println("Failed to initialize database connection: " + e.getMessage());
-            throw new RuntimeException("Failed to initialize database connection", e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
 

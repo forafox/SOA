@@ -27,7 +27,9 @@ export default function HomePage() {
   return (
     <div className="flex h-screen bg-background">
       <Sidebar activePage={activePage} onPageChange={setActivePage} />
-      <main className="flex-1 overflow-hidden">{renderActivePage()}</main>
+      <main className="flex-1 overflow-hidden">
+        {renderActivePage()}
+      </main>
     </div>
   )
 }
