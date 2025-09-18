@@ -33,6 +33,8 @@ dependencies {
         exclude(group = "ch.qos.logback", module = "logback-classic")
     }
 
+    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
+
     compileOnly("jakarta.servlet:jakarta.servlet-api:6.0.0")
 
     annotationProcessor("org.projectlombok:lombok")
