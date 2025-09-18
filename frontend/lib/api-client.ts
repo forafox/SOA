@@ -85,10 +85,12 @@ function getUseMockData(): boolean {
 }
 
 class MoviesOscarsApiClient {
-  private baseUrl: string
+  private moviesBaseUrl: string
+  private oscarsBaseUrl: string
 
-  constructor(baseUrl = "http://localhost:8080") {
-    this.baseUrl = baseUrl
+  constructor(moviesBaseUrl = "http://localhost:8081", oscarsBaseUrl = "http://localhost:8080") {
+    this.moviesBaseUrl = moviesBaseUrl
+    this.oscarsBaseUrl = oscarsBaseUrl
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
@@ -137,7 +139,7 @@ class MoviesOscarsApiClient {
     if (pagination.page) params.append("page", pagination.page.toString())
     if (pagination.size) params.append("size", pagination.size.toString())
 
-    const response = await fetch(`${this.baseUrl}/movies?${params}`)
+    const response = await fetch(`${this.moviesBaseUrl}/api/movies?${params}`)
     return this.handleResponse<Movie[]>(response)
   }
 
@@ -146,7 +148,7 @@ class MoviesOscarsApiClient {
       return getMockMovieById(id) || null
     }
 
-    const response = await fetch(`${this.baseUrl}/movies/${id}`)
+    const response = await fetch(`${this.moviesBaseUrl}/api/movies/${id}`)
     return this.handleResponse<Movie>(response)
   }
 
@@ -173,22 +175,32 @@ class MoviesOscarsApiClient {
       return newMovie
     }
 
-    const params = new URLSearchParams()
-    params.append("name", data.name)
-    params.append("x", data.x.toString())
-    params.append("y", data.y.toString())
-    params.append("oscarsCount", data.oscarsCount.toString())
-    if (data.goldenPalmCount) params.append("goldenPalmCount", data.goldenPalmCount.toString())
-    if (data.budget) params.append("budget", data.budget.toString())
-    params.append("genre", data.genre)
-    params.append("screenwriterName", data.screenwriterName)
-    params.append("screenwriterBirthday", data.screenwriterBirthday)
-    params.append("screenwriterHeight", data.screenwriterHeight.toString())
-    params.append("screenwriterWeight", data.screenwriterWeight.toString())
-    params.append("screenwriterPassportID", data.screenwriterPassportID)
+    // Преобразуем данные в правильный формат для бэкенда
+    const movieData = {
+      name: data.name,
+      coordinates: {
+        x: data.x,
+        y: data.y
+      },
+      oscarsCount: data.oscarsCount,
+      goldenPalmCount: data.goldenPalmCount,
+      budget: data.budget,
+      genre: data.genre,
+      screenwriter: {
+        name: data.screenwriterName,
+        birthday: data.screenwriterBirthday,
+        height: data.screenwriterHeight,
+        weight: data.screenwriterWeight,
+        passportID: data.screenwriterPassportID
+      }
+    }
 
-    const response = await fetch(`${this.baseUrl}/movies?${params}`, {
+    const response = await fetch(`${this.moviesBaseUrl}/api/movies`, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(movieData),
     })
     return this.handleResponse<Movie>(response)
   }
@@ -202,7 +214,7 @@ class MoviesOscarsApiClient {
       return mockMovies[movieIndex]
     }
 
-    const response = await fetch(`${this.baseUrl}/movies/${id}`, {
+    const response = await fetch(`${this.moviesBaseUrl}/api/movies/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -221,7 +233,7 @@ class MoviesOscarsApiClient {
       return
     }
 
-    const response = await fetch(`${this.baseUrl}/movies/${id}`, {
+    const response = await fetch(`${this.moviesBaseUrl}/api/movies/${id}`, {
       method: "DELETE",
     })
     await this.handleResponse<void>(response)
@@ -237,7 +249,7 @@ class MoviesOscarsApiClient {
       return
     }
 
-    const response = await fetch(`${this.baseUrl}/movies/oscarsCount/${count}`, {
+    const response = await fetch(`${this.moviesBaseUrl}/api/movies/oscarsCount/${count}`, {
       method: "DELETE",
     })
     await this.handleResponse<void>(response)
@@ -249,7 +261,7 @@ class MoviesOscarsApiClient {
       return { count: filteredCount }
     }
 
-    const response = await fetch(`${this.baseUrl}/movies/count/oscars-less-than/${count}`)
+    const response = await fetch(`${this.moviesBaseUrl}/api/movies/count/oscars-less-than/${count}`)
     return this.handleResponse<{ count: number }>(response)
   }
 
@@ -258,7 +270,7 @@ class MoviesOscarsApiClient {
       return mockMovies.filter((movie) => movie.name.toLowerCase().startsWith(prefix.toLowerCase()))
     }
 
-    const response = await fetch(`${this.baseUrl}/movies/name-starts-with/${encodeURIComponent(prefix)}`)
+    const response = await fetch(`${this.moviesBaseUrl}/api/movies/name-starts-with/${encodeURIComponent(prefix)}`)
     return this.handleResponse<Movie[]>(response)
   }
 
@@ -268,13 +280,14 @@ class MoviesOscarsApiClient {
       return [...mockOscarLosers]
     }
 
-    const response = await fetch(`${this.baseUrl}/oscars/operators/losers`)
+    const response = await fetch(`${this.oscarsBaseUrl}/oscars/operators/losers`)
     return this.handleResponse<Person[]>(response)
   }
 
   async honorMoviesByLength(
     minLength: number,
     oscarsToAdd: number,
+    callbackUrl?: string,
   ): Promise<{
     updatedCount: number
     updatedMovies: Movie[]
@@ -295,8 +308,14 @@ class MoviesOscarsApiClient {
     const params = new URLSearchParams()
     params.append("oscarsToAdd", oscarsToAdd.toString())
 
-    const response = await fetch(`${this.baseUrl}/oscars/movies/honor-by-length/${minLength}?${params}`, {
+    const body = callbackUrl ? { callbackUrl } : undefined
+
+    const response = await fetch(`${this.oscarsBaseUrl}/oscars/movies/honor-by-length/${minLength}?${params}`, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: body ? JSON.stringify(body) : undefined,
     })
     return this.handleResponse<{ updatedCount: number; updatedMovies: Movie[] }>(response)
   }
@@ -304,6 +323,7 @@ class MoviesOscarsApiClient {
   async honorMoviesWithFewOscars(
     maxOscars: number,
     oscarsToAdd: number,
+    callbackUrl?: string,
   ): Promise<{
     updatedCount: number
     updatedMovies: Movie[]
@@ -324,8 +344,14 @@ class MoviesOscarsApiClient {
     params.append("maxOscars", maxOscars.toString())
     params.append("oscarsToAdd", oscarsToAdd.toString())
 
-    const response = await fetch(`${this.baseUrl}/oscars/movies/honor-low-oscars?${params}`, {
+    const body = callbackUrl ? { callbackUrl } : undefined
+
+    const response = await fetch(`${this.oscarsBaseUrl}/oscars/movies/honor-low-oscars?${params}`, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: body ? JSON.stringify(body) : undefined,
     })
     return this.handleResponse<{ updatedCount: number; updatedMovies: Movie[] }>(response)
   }
@@ -340,13 +366,14 @@ class MoviesOscarsApiClient {
     if (pagination.page) params.append("page", pagination.page.toString())
     if (pagination.size) params.append("size", pagination.size.toString())
 
-    const response = await fetch(`${this.baseUrl}/oscars/movies/${movieId}?${params}`)
+    const response = await fetch(`${this.oscarsBaseUrl}/oscars/movies/${movieId}?${params}`)
     return this.handleResponse<OscarAward[]>(response)
   }
 
   async addOscarsToMovie(
     movieId: number,
     oscarsToAdd: number,
+    callbackUrl?: string,
   ): Promise<{
     updatedCount: number
     updatedMovies: Movie[]
@@ -366,8 +393,14 @@ class MoviesOscarsApiClient {
     const params = new URLSearchParams()
     params.append("oscarsToAdd", oscarsToAdd.toString())
 
-    const response = await fetch(`${this.baseUrl}/oscars/movies/${movieId}?${params}`, {
+    const body = callbackUrl ? { callbackUrl } : undefined
+
+    const response = await fetch(`${this.oscarsBaseUrl}/oscars/movies/${movieId}?${params}`, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: body ? JSON.stringify(body) : undefined,
     })
     return this.handleResponse<{ updatedCount: number; updatedMovies: Movie[] }>(response)
   }
@@ -382,7 +415,7 @@ class MoviesOscarsApiClient {
       return
     }
 
-    const response = await fetch(`${this.baseUrl}/oscars/movies/${movieId}`, {
+    const response = await fetch(`${this.oscarsBaseUrl}/oscars/movies/${movieId}`, {
       method: "DELETE",
     })
     await this.handleResponse<void>(response)

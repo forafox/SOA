@@ -1,6 +1,8 @@
 package com.blps;
 
-import org.glassfish.grizzly.http.server.HttpServer;
+import com.blps.config.CorsFilter;
+import com.blps.config.ObjectMapperProvider;
+import com.blps.controller.MovieController;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -9,28 +11,27 @@ import java.net.URI;
 
 public class Main {
 
-    public static HttpServer startServer() {
-
-
-        ResourceConfig rc = new ResourceConfig()
-                .register(MovieResource.class)
-                .register(JacksonFeature.class)
-                .register(ObjectMapperProvider.class);
-
-        return GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), rc);
-    }
-
-    public static final String BASE_URI = "http://localhost:8080/api/";
-
+    public static final String BASE_URI = "http://localhost:8081/api/";
 
     public static void main(String[] args) {
-        final HttpServer server = startServer();
-
+        System.out.println("Starting Movies API server...");
+        startServer();
+        System.out.println("Server started at " + BASE_URI);
 
         try {
-            Thread.currentThread().join(); // держим сервер
+            Thread.currentThread().join();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    private static void startServer() {
+        ResourceConfig rc = new ResourceConfig()
+                .register(MovieController.class)
+                .register(JacksonFeature.class)
+                .register(ObjectMapperProvider.class)
+                .register(CorsFilter.class);
+
+        GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), rc);
     }
 }

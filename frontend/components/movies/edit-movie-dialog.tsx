@@ -147,12 +147,12 @@ export function EditMovieDialog({ movie, open, onOpenChange, onMovieUpdated }: E
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="oscarsCount">Количество Оскаров (мин. 1)</Label>
+                  <Label htmlFor="oscarsCount">Количество Оскаров (мин. 0)</Label>
                   <Input
                     id="oscarsCount"
                     type="number"
-                    min={1}
-                    value={formData.oscarsCount || 1}
+                    min={0}
+                    value={formData.oscarsCount || 0}
                     onChange={(e) => updateFormData("oscarsCount", Number.parseInt(e.target.value))}
                   />
                 </div>

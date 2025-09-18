@@ -21,20 +21,25 @@ import java.util.Map;
 public class MoviesClient {
 
     private final RestTemplate restTemplate;
-    @Value("${movies.api.base-url:http://localhost:8080}")
+    @Value("${movies.api.base-url:http://localhost:8081}")
     private String baseUrl;
 
     private static final String URL_WITH_ID = "/movies/{id}";
 
     public Movie getMovieById(long id) {
+        System.out.println("MoviesClient: Getting movie by ID " + id + " from " + baseUrl + URL_WITH_ID);
         try {
-            return restTemplate.getForObject(baseUrl + URL_WITH_ID, Movie.class, id);
+            Movie movie = restTemplate.getForObject(baseUrl + URL_WITH_ID, Movie.class, id);
+            System.out.println("MoviesClient: Retrieved movie: " + (movie != null ? movie.name() : "null"));
+            return movie;
         } catch (org.springframework.web.client.HttpClientErrorException e) {
+            System.err.println("MoviesClient: HTTP error getting movie " + id + ": " + e.getStatusCode());
             if (e.getStatusCode().value() == 204) {
                 return null; // Фильм не найден
             }
             throw e;
         } catch (Exception e) {
+            System.err.println("MoviesClient: Error getting movie " + id + ": " + e.getMessage());
             return null;
         }
     }
@@ -62,6 +67,7 @@ public class MoviesClient {
     }
 
     public List<Movie> getAllMovies() {
+        System.out.println("MoviesClient: Getting all movies from " + baseUrl + "/movies");
         List<Movie> allMovies = new ArrayList<>();
         int page = 1;
         int size = 100;
@@ -75,6 +81,7 @@ public class MoviesClient {
             page++;
         }
         
+        System.out.println("MoviesClient: Retrieved total " + allMovies.size() + " movies");
         return allMovies;
     }
 
@@ -94,10 +101,22 @@ public class MoviesClient {
     }
 
     public Movie patchMovie(long id, MoviePatch patch) {
+        System.out.println("MoviesClient: Patching movie ID " + id + " with oscars count: " + patch.oscarsCount());
         try {
             HttpEntity<MoviePatch> request = new HttpEntity<>(patch);
-            return restTemplate.patchForObject(baseUrl + URL_WITH_ID, request, Movie.class, id);
+            // Используем PUT вместо PATCH, так как Jersey не поддерживает PATCH через RestTemplate
+            Movie updatedMovie = restTemplate.exchange(
+                baseUrl + URL_WITH_ID, 
+                HttpMethod.PUT, 
+                request, 
+                Movie.class, 
+                id
+            ).getBody();
+            System.out.println("MoviesClient: Successfully patched movie ID " + id + " - new oscars count: " + (updatedMovie != null ? updatedMovie.oscarsCount() : "null"));
+            return updatedMovie;
         } catch (Exception e) {
+            System.err.println("MoviesClient: Error patching movie " + id + ": " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }

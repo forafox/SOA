@@ -35,11 +35,3 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build --no-daemon
 
-      - name: Build Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./backend-oscars
-          push: false
-          tags: backend-oscars:ci
-
-

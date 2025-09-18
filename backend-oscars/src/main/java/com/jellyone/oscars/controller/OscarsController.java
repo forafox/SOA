@@ -46,7 +46,9 @@ public class OscarsController {
             )
     })
     public ResponseEntity<List<Person>> getOscarLosers() {
+        System.out.println("OscarsController: Getting Oscar losers...");
         List<Person> losers = service.getOscarLosers();
+        System.out.println("OscarsController: Returning " + losers.size() + " Oscar losers");
         return losers.isEmpty()
                 ? ResponseEntity.noContent().build()
                 : ResponseEntity.ok(losers);

@@ -1,4 +1,4 @@
-package com.blps.entity;
+package com.blps.model;
 
 public enum MovieGenre {
     ACTION,

@@ -1,7 +1,6 @@
-package com.blps;
+package com.blps.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.ws.rs.ext.ContextResolver;
 import jakarta.ws.rs.ext.Provider;
@@ -9,12 +8,7 @@ import jakarta.ws.rs.ext.Provider;
 @Provider
 public class ObjectMapperProvider implements ContextResolver<ObjectMapper> {
 
-    private final ObjectMapper mapper;
-
-    public ObjectMapperProvider() {
-        mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-    }
+    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @Override
     public ObjectMapper getContext(Class<?> type) {
