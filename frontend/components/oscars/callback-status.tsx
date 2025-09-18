@@ -61,11 +61,11 @@ export function CallbackStatus({ className }: CallbackStatusProps) {
   const getCallbackMessage = (type: string, data: unknown): string => {
     switch (type) {
       case 'onAwarded':
-        return `Награждение по длине: обработано ${data?.updatedMovies?.length || 0} фильмов`
+        return `Награждение по длине: обработано ${(data as { updatedMovies?: unknown[] })?.updatedMovies?.length || 0} фильмов`
       case 'notifyAdmins':
-        return `Уведомление администраторам: ${data?.updatedMovies?.length || 0} фильмов с малым количеством Оскаров`
+        return `Уведомление администраторам: ${(data as { updatedMovies?: unknown[] })?.updatedMovies?.length || 0} фильмов с малым количеством Оскаров`
       case 'notifyOscarsTeam':
-        return `Команда Оскаров: добавлено ${data?.addedOscars || 0} Оскаров к фильму ID ${data?.movieId}`
+        return `Команда Оскаров: добавлено ${(data as { addedOscars?: number; movieId?: number })?.addedOscars || 0} Оскаров к фильму ID ${(data as { addedOscars?: number; movieId?: number })?.movieId}`
       default:
         return 'Получен коллбэк'
     }
