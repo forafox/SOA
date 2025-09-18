@@ -1,5 +1,6 @@
 package com.blps;
 
+import com.blps.controller.MovieController;
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
 
@@ -12,7 +13,7 @@ public class RestApplication extends Application {
     @Override
     public Set<Class<?>> getClasses() {
         Set<Class<?>> resources = new HashSet<>();
-        resources.add(MovieResource.class);  // Регистрируем наш ресурсный класс
+        resources.add(MovieController.class);
         return resources;
     }
 }

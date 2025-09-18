@@ -1,5 +1,7 @@
 package com.blps;
 
+import com.blps.config.ObjectMapperProvider;
+import com.blps.controller.MovieController;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -10,12 +12,13 @@ public class Main {
 
     public static final String BASE_URI = "http://localhost:8080/api/";
 
-
     public static void main(String[] args) {
+        System.out.println("Starting Movies API server...");
         startServer();
+        System.out.println("Server started at " + BASE_URI);
 
         try {
-            Thread.currentThread().join(); // держим сервер
+            Thread.currentThread().join();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -23,7 +26,7 @@ public class Main {
 
     private static void startServer() {
         ResourceConfig rc = new ResourceConfig()
-                .register(MovieResource.class)
+                .register(MovieController.class)
                 .register(JacksonFeature.class)
                 .register(ObjectMapperProvider.class);
 

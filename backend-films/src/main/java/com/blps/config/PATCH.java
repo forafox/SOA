@@ -1,4 +1,4 @@
-package com.blps;
+package com.blps.config;
 
 import jakarta.ws.rs.HttpMethod;
 
