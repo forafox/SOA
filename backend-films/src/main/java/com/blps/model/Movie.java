@@ -4,63 +4,48 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
 
 @Getter
-@
+@AllArgsConstructor
+@NoArgsConstructor
 public class Movie {
 
+    @Setter
     @NotNull
     @Positive
     private Long id;
-    
+
     @NotBlank
     private String name;
-    
+
     @Setter
     @NotNull
     private Coordinates coordinates;
-    
+
     @Setter
     private LocalDate creationDate = LocalDate.now();
-    
+
     @PositiveOrZero
     private Long oscarsCount;
-    
+
     @PositiveOrZero
     private Long goldenPalmCount;
-    
+
     @Positive
     private Float budget;
-    
+
     @Setter
     @NotNull
     private MovieGenre genre;
-    
+
     @Setter
     private Person screenwriter;
-
-    public Movie() {}
-
-    public Movie(Long id, String name, Coordinates coordinates, LocalDate creationDate, 
-                 Long oscarsCount, Long goldenPalmCount, Float budget, MovieGenre genre, Person screenwriter) {
-        this.id = id;
-        this.name = name;
-        this.coordinates = coordinates;
-        this.creationDate = creationDate;
-        this.oscarsCount = oscarsCount;
-        this.goldenPalmCount = goldenPalmCount;
-        this.budget = budget;
-        this.genre = genre;
-        this.screenwriter = screenwriter;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public void setName(String name) {
         if (name == null || name.trim().isEmpty()) {

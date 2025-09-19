@@ -3,20 +3,22 @@ package com.blps;
 import com.blps.config.CorsFilter;
 import com.blps.config.ObjectMapperProvider;
 import com.blps.controller.MovieController;
+import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import java.net.URI;
 
+@Slf4j
 public class Main {
 
     public static final String BASE_URI = "http://localhost:8081/api/";
 
     public static void main(String[] args) {
-        System.out.println("Starting Movies API server...");
+        log.info("Starting Movies API server...");
         startServer();
-        System.out.println("Server started at " + BASE_URI);
+        log.info("Server started at " + BASE_URI);
 
         try {
             Thread.currentThread().join();

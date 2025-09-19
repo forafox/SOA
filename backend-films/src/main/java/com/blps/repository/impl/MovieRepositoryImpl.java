@@ -6,6 +6,7 @@ import com.blps.model.Movie;
 import com.blps.model.MovieGenre;
 import com.blps.model.Person;
 import com.blps.repository.MovieRepository;
+import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,11 +15,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class MovieRepositoryImpl implements MovieRepository {
 
     @Override
     public Movie create(Movie movie) throws SQLException {
-        System.out.println("Creating movie: " + movie.getName());
+        log.info("Creating movie: {}", movie.getName());
         try (Connection conn = DatabaseConfiguration.getConnection()) {
             conn.setAutoCommit(false);
 
@@ -71,7 +73,7 @@ public class MovieRepositoryImpl implements MovieRepository {
             }
 
             conn.commit();
-            System.out.println("Movie created successfully with ID: " + movie.getId());
+            log.info("Movie created successfully with ID: {}", movie.getId());
         }
 
         return movie;
@@ -79,7 +81,7 @@ public class MovieRepositoryImpl implements MovieRepository {
 
     @Override
     public Movie getById(Long id) throws SQLException {
-        System.out.println("Getting movie by ID: " + id);
+        log.info("Getting movie by ID: {}", id);
         String sql = "SELECT m.*, c.x AS coord_x, c.y AS coord_y, " +
                 "p.name AS p_name, p.birthday AS p_birthday, p.height AS p_height, p.weight AS p_weight, p.passport_id AS p_passport " +
                 "FROM movies m " +
@@ -94,10 +96,10 @@ public class MovieRepositoryImpl implements MovieRepository {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                System.out.println("Movie found: " + rs.getString("name"));
+                log.info("Movie found: {}", rs.getString("name"));
                 return mapResultSetToMovie(rs);
             } else {
-                System.out.println("Movie not found with ID: " + id);
+                log.info("Movie not found with ID: {}", id);
                 return null;
             }
         }
@@ -105,20 +107,20 @@ public class MovieRepositoryImpl implements MovieRepository {
 
     @Override
     public boolean deleteById(Long id) throws SQLException {
-        System.out.println("Deleting movie with ID: " + id);
+        log.info("Deleting movie with ID: {}", id);
         String sql = "DELETE FROM movies WHERE id = ?";
         try (Connection conn = DatabaseConfiguration.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
             boolean deleted = stmt.executeUpdate() > 0;
-            System.out.println("Movie deletion result: " + deleted);
+            log.info("Movie deletion result: {}", deleted);
             return deleted;
         }
     }
 
     @Override
     public Movie update(Movie movie) throws SQLException {
-        System.out.println("Updating movie with ID: " + movie.getId());
+        log.info("Updating movie with ID: {}", movie.getId());
         try (Connection conn = DatabaseConfiguration.getConnection()) {
             conn.setAutoCommit(false);
 
@@ -161,14 +163,14 @@ public class MovieRepositoryImpl implements MovieRepository {
             }
 
             conn.commit();
-            System.out.println("Movie updated successfully");
+            log.info("Movie updated successfully");
         }
         return movie;
     }
 
     @Override
     public List<Movie> getAll() throws SQLException {
-        System.out.println("Getting all movies");
+        log.info("Getting all movies");
         List<Movie> list = new ArrayList<>();
         String sql = "SELECT m.*, c.x AS coord_x, c.y AS coord_y, " +
                 "p.name AS p_name, p.birthday AS p_birthday, p.height AS p_height, p.weight AS p_weight, p.passport_id AS p_passport " +
@@ -184,7 +186,7 @@ public class MovieRepositoryImpl implements MovieRepository {
                 list.add(mapResultSetToMovie(rs));
             }
         }
-        System.out.println("Retrieved " + list.size() + " movies");
+        log.info("Retrieved {} movies", list.size());
         return list;
     }
 
@@ -212,12 +214,12 @@ public class MovieRepositoryImpl implements MovieRepository {
         String name = rs.getString("p_name");
         if (name != null) {
             Person p = new Person(
-                personId,
-                name,
-                rs.getDate("p_birthday") != null ? rs.getDate("p_birthday").toLocalDate() : null,
-                rs.getDouble("p_height"),
-                rs.getLong("p_weight"),
-                rs.getString("p_passport")
+                    personId,
+                    name,
+                    rs.getDate("p_birthday") != null ? rs.getDate("p_birthday").toLocalDate() : null,
+                    rs.getDouble("p_height"),
+                    rs.getLong("p_weight"),
+                    rs.getString("p_passport")
             );
             movie.setScreenwriter(p);
         }

@@ -3,32 +3,34 @@ package com.blps.service;
 import com.blps.model.Movie;
 import com.blps.model.MovieGenre;
 import com.blps.repository.MovieRepository;
+import lombok.extern.slf4j.Slf4j;
 
 import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class MovieService {
-    
+
     private final MovieRepository movieRepository;
-    
+
     public MovieService(MovieRepository movieRepository) {
         this.movieRepository = movieRepository;
     }
-    
+
     public Movie createMovie(Movie movie) throws SQLException {
-        System.out.println("Service: Creating movie - " + movie.getName());
+        log.info("Service: Creating movie - {}", movie.getName());
         return movieRepository.create(movie);
     }
-    
+
     public Movie getMovieById(Long id) throws SQLException {
-        System.out.println("Service: Getting movie by ID - " + id);
+        log.info("Service: Getting movie by ID - {}", id);
         return movieRepository.getById(id);
     }
-    
+
     public List<Movie> getMovies(String name, MovieGenre genre, String sort, int page, int size) throws SQLException {
-        System.out.println("Service: Getting movies with filters - name: " + name + ", genre: " + genre + ", sort: " + sort + ", page: " + page + ", size: " + size);
+        log.info("Service: Getting movies with filters - name: {}, genre: {}, sort: {}, page: {}, size: {}", name, genre, sort, page, size);
         List<Movie> result = movieRepository.getAll();
 
         // Filter by name
@@ -60,20 +62,20 @@ public class MovieService {
         // Pagination
         int fromIndex = (page - 1) * size;
         if (fromIndex >= result.size()) {
-            System.out.println("Service: No movies found for pagination");
+            log.info("Service: No movies found for pagination");
             return List.of();
         }
         int toIndex = Math.min(fromIndex + size, result.size());
         List<Movie> paginatedResult = result.subList(fromIndex, toIndex);
-        System.out.println("Service: Returning " + paginatedResult.size() + " movies");
+        log.info("Service: Returning {} movies", paginatedResult.size());
         return paginatedResult;
     }
-    
+
     public Movie updateMovie(Long id, Movie partialMovie) throws SQLException {
-        System.out.println("Service: Updating movie with ID - " + id);
+        log.info("Service: Updating movie with ID - {}", id);
         Movie existing = movieRepository.getById(id);
         if (existing == null) {
-            System.out.println("Service: Movie not found for update");
+            log.info("Service: Movie not found for update");
             return null;
         }
 
@@ -100,17 +102,17 @@ public class MovieService {
             existing.setScreenwriter(partialMovie.getScreenwriter());
         }
 
-        System.out.println("Service: Movie updated successfully");
+        log.info("Service: Movie updated successfully");
         return movieRepository.update(existing);
     }
-    
+
     public boolean deleteMovie(Long id) throws SQLException {
-        System.out.println("Service: Deleting movie with ID - " + id);
+        log.info("Service: Deleting movie with ID - {}", id);
         return movieRepository.deleteById(id);
     }
-    
+
     public boolean deleteMoviesByOscarsCount(int count) throws SQLException {
-        System.out.println("Service: Deleting movies with oscars count - " + count);
+        log.info("Service: Deleting movies with oscars count - {}", count);
         List<Movie> all = movieRepository.getAll();
         boolean anyDeleted = false;
         for (Movie m : all) {
@@ -119,28 +121,28 @@ public class MovieService {
                 anyDeleted = true;
             }
         }
-        System.out.println("Service: Deleted movies with oscars count " + count + ": " + anyDeleted);
+        log.info("Service: Deleted movies with oscars count {}: {}", count, anyDeleted);
         return anyDeleted;
     }
-    
+
     public long countMoviesWithOscarsLessThan(int count) throws SQLException {
-        System.out.println("Service: Counting movies with oscars less than - " + count);
+        log.info("Service: Counting movies with oscars less than - {}", count);
         long result = movieRepository.getAll().stream()
                 .filter(m -> m.getOscarsCount() != null && m.getOscarsCount() < count)
                 .count();
-        System.out.println("Service: Found " + result + " movies with oscars less than " + count);
+        log.info("Service: Found {} movies with oscars less than {}", result, count);
         return result;
     }
-    
+
     public List<Movie> getMoviesByNamePrefix(String prefix) throws SQLException {
-        System.out.println("Service: Getting movies with name prefix - " + prefix);
+        log.info("Service: Getting movies with name prefix - {}", prefix);
         List<Movie> result = movieRepository.getAll().stream()
                 .filter(m -> m.getName() != null && m.getName().startsWith(prefix))
                 .collect(Collectors.toList());
-        System.out.println("Service: Found " + result.size() + " movies with prefix " + prefix);
+        log.info("Service: Found {} movies with prefix {}", result.size(), prefix);
         return result;
     }
-    
+
     private Comparator<Movie> getComparator(String field) {
         return switch (field) {
             case "oscarsCount" -> Comparator.comparing(Movie::getOscarsCount, Comparator.nullsLast(Long::compareTo));
