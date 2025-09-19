@@ -4,9 +4,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
+@Getter
+@
 public class Movie {
 
     @NotNull
@@ -16,9 +20,11 @@ public class Movie {
     @NotBlank
     private String name;
     
+    @Setter
     @NotNull
     private Coordinates coordinates;
     
+    @Setter
     private LocalDate creationDate = LocalDate.now();
     
     @PositiveOrZero
@@ -30,9 +36,11 @@ public class Movie {
     @Positive
     private Float budget;
     
+    @Setter
     @NotNull
     private MovieGenre genre;
     
+    @Setter
     private Person screenwriter;
 
     public Movie() {}
@@ -50,16 +58,8 @@ public class Movie {
         this.screenwriter = screenwriter;
     }
 
-    public Long getId() {
-        return id;
-    }
-
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public void setName(String name) {
@@ -69,35 +69,11 @@ public class Movie {
         this.name = name;
     }
 
-    public Coordinates getCoordinates() {
-        return coordinates;
-    }
-
-    public void setCoordinates(Coordinates coordinates) {
-        this.coordinates = coordinates;
-    }
-
-    public LocalDate getCreationDate() {
-        return creationDate;
-    }
-
-    public void setCreationDate(LocalDate creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    public Long getOscarsCount() {
-        return oscarsCount;
-    }
-
     public void setOscarsCount(Long oscarsCount) {
         if (oscarsCount != null && oscarsCount < 0) {
             throw new IllegalArgumentException("oscarsCount must be non-negative");
         }
         this.oscarsCount = oscarsCount;
-    }
-
-    public Long getGoldenPalmCount() {
-        return goldenPalmCount;
     }
 
     public void setGoldenPalmCount(Long goldenPalmCount) {
@@ -107,10 +83,6 @@ public class Movie {
         this.goldenPalmCount = goldenPalmCount;
     }
 
-    public Float getBudget() {
-        return budget;
-    }
-
     public void setBudget(Float budget) {
         if (budget != null && budget <= 0) {
             throw new IllegalArgumentException("budget must be positive");
@@ -118,19 +90,4 @@ public class Movie {
         this.budget = budget;
     }
 
-    public MovieGenre getGenre() {
-        return genre;
-    }
-
-    public void setGenre(MovieGenre genre) {
-        this.genre = genre;
-    }
-
-    public Person getScreenwriter() {
-        return screenwriter;
-    }
-
-    public void setScreenwriter(Person screenwriter) {
-        this.screenwriter = screenwriter;
-    }
 }
