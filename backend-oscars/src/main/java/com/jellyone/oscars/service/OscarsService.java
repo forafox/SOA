@@ -5,12 +5,14 @@ import com.jellyone.oscars.model.Movie;
 import com.jellyone.oscars.model.MoviePatch;
 import com.jellyone.oscars.model.Person;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.time.LocalDate;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OscarsService {
@@ -18,51 +20,50 @@ public class OscarsService {
     private final CallbackNotifier callbackNotifier;
 
     public List<Person> getOscarLosers() {
-        System.out.println("OscarsService: Getting Oscar losers...");
+        log.info("OscarsService: Getting Oscar losers...");
         try {
             // Получаем все фильмы
             List<Movie> allMovies = moviesClient.getAllMovies();
-            System.out.println("OscarsService: Retrieved " + allMovies.size() + " movies from Movies API");
-            
+            log.info("OscarsService: Retrieved {} movies from Movies API", allMovies.size());
+
             // Извлекаем всех сценаристов из фильмов, у которых нет Оскаров (oscarsCount = 0 или null)
             List<Person> losers = allMovies.stream()
-                    .filter(movie -> movie.screenwriter() != null && 
-                                   (movie.oscarsCount() == null || movie.oscarsCount() == 0))
+                    .filter(movie -> movie.screenwriter() != null &&
+                            (movie.oscarsCount() == null || movie.oscarsCount() == 0))
                     .map(Movie::screenwriter)
                     .distinct()
                     .collect(Collectors.toList());
-            
-            System.out.println("OscarsService: Found " + losers.size() + " Oscar losers");
+
+            log.info("OscarsService: Found {} Oscar losers", losers.size());
             return losers;
         } catch (Exception e) {
-            System.err.println("OscarsService: Error getting Oscar losers: " + e.getMessage());
-            e.printStackTrace();
+            log.error("OscarsService: Error getting Oscar losers", e);
             return List.of();
         }
     }
 
     public Map<String, Object> honorMoviesByLength(double minLength, int oscarsToAdd, String callbackUrl) {
-        System.out.println("OscarsService: Honoring movies by length - minLength: " + minLength + ", oscarsToAdd: " + oscarsToAdd);
+        log.info("OscarsService: Honoring movies by length - minLength: {}, oscarsToAdd: {}", minLength, oscarsToAdd);
         try {
             // Получаем все фильмы
             List<Movie> allMovies = moviesClient.getAllMovies();
-            System.out.println("OscarsService: Retrieved " + allMovies.size() + " movies from Movies API");
-            
+            log.info("OscarsService: Retrieved {} movies from Movies API", allMovies.size());
+
             // Фильтруем по длине (используем x и y координаты для определения длины)
             List<Movie> filteredMovies = allMovies.stream()
-                    .filter(movie -> movie.coordinates() != null && 
-                                   movie.coordinates().x() != null && 
-                                   movie.coordinates().y() != null && 
-                                   (movie.coordinates().x() + movie.coordinates().y()) > minLength)
+                    .filter(movie -> movie.coordinates() != null &&
+                            movie.coordinates().x() != null &&
+                            movie.coordinates().y() != null &&
+                            (movie.coordinates().x() + movie.coordinates().y()) > minLength)
                     .toList();
-            
-            System.out.println("OscarsService: Found " + filteredMovies.size() + " movies with length > " + minLength);
+
+            log.info("OscarsService: Found {} movies with length > {}", filteredMovies.size(), minLength);
 
             // Обновляем количество оскаров для каждого фильма
             List<Movie> updatedMovies = new ArrayList<>();
             for (Movie movie : filteredMovies) {
                 try {
-                    System.out.println("OscarsService: Updating movie ID " + movie.id() + " - " + movie.name());
+                    log.info("OscarsService: Updating movie ID {} - {}", movie.id(), movie.name());
                     MoviePatch patch = new MoviePatch(
                             movie.name(),
                             movie.coordinates(),
@@ -72,11 +73,11 @@ public class OscarsService {
                             movie.genre(),
                             movie.screenwriter()
                     );
-                    
+
                     Movie updatedMovie = moviesClient.patchMovie(movie.id(), patch);
                     if (updatedMovie != null) {
                         updatedMovies.add(updatedMovie);
-                        System.out.println("OscarsService: Successfully updated movie ID " + movie.id() + " - new oscars count: " + updatedMovie.oscarsCount());
+                        log.info("OscarsService: Successfully updated movie ID {} - new oscars count: {}", movie.id(), updatedMovie.oscarsCount());
                         // Асинхронный коллбэк с задержкой
                         if (callbackUrl != null && !callbackUrl.isBlank()) {
                             // Запускаем коллбэк в отдельном потоке
@@ -84,34 +85,32 @@ public class OscarsService {
                                 try {
                                     // Задержка в 3 секунды перед отправкой коллбэка
                                     Thread.sleep(3000);
-                                    
+
                                     Map<String, Object> payload = new HashMap<>();
                                     payload.put("movieId", updatedMovie.id());
                                     payload.put("newOscarsCount", updatedMovie.oscarsCount());
                                     payload.put("updatedMovies", updatedMovies);
                                     callbackNotifier.postJson(callbackUrl, payload);
                                 } catch (Exception callbackException) {
-                                    System.err.println("OscarsService: Callback error for movie " + movie.id() + ": " + callbackException.getMessage());
+                                    log.error("OscarsService: Callback error for movie {}", movie.id(), callbackException);
                                 }
                             }).start();
                         }
                     } else {
-                        System.err.println("OscarsService: Failed to update movie ID " + movie.id());
+                        log.warn("OscarsService: Failed to update movie ID {}", movie.id());
                     }
                 } catch (Exception movieUpdateException) {
-                    System.err.println("OscarsService: Error updating movie ID " + movie.id() + ": " + movieUpdateException.getMessage());
-                    movieUpdateException.printStackTrace();
+                    log.error("OscarsService: Error updating movie ID {}", movie.id(), movieUpdateException);
                 }
             }
 
-            System.out.println("OscarsService: Successfully updated " + updatedMovies.size() + " movies");
+            log.info("OscarsService: Successfully updated {} movies", updatedMovies.size());
             Map<String, Object> result = new HashMap<>();
             result.put("updatedCount", updatedMovies.size());
             result.put("updatedMovies", updatedMovies);
             return result;
         } catch (Exception e) {
-            System.err.println("OscarsService: Error in honorMoviesByLength: " + e.getMessage());
-            e.printStackTrace();
+            log.error("OscarsService: Error in honorMoviesByLength", e);
             Map<String, Object> result = new HashMap<>();
             result.put("updatedCount", 0);
             result.put("updatedMovies", List.of());
@@ -123,11 +122,11 @@ public class OscarsService {
         try {
             // Получаем все фильмы
             List<Movie> allMovies = moviesClient.getAllMovies();
-            
+
             // Фильтруем по количеству оскаров
             List<Movie> filteredMovies = allMovies.stream()
-                    .filter(movie -> movie.oscarsCount() != null && 
-                                   movie.oscarsCount() <= maxOscars)
+                    .filter(movie -> movie.oscarsCount() != null &&
+                            movie.oscarsCount() <= maxOscars)
                     .collect(Collectors.toList());
 
             // Обновляем количество оскаров для каждого фильма
@@ -143,7 +142,7 @@ public class OscarsService {
                             movie.genre(),
                             movie.screenwriter()
                     );
-                    
+
                     Movie updatedMovie = moviesClient.patchMovie(movie.id(), patch);
                     if (updatedMovie != null) {
                         updatedMovies.add(updatedMovie);
@@ -154,14 +153,14 @@ public class OscarsService {
                                 try {
                                     // Задержка в 3 секунды перед отправкой коллбэка
                                     Thread.sleep(3000);
-                                    
+
                                     Map<String, Object> payload = new HashMap<>();
                                     payload.put("movieId", updatedMovie.id());
                                     payload.put("addedOscars", oscarsToAdd);
                                     payload.put("updatedMovies", updatedMovies);
                                     callbackNotifier.postJson(callbackUrl, payload);
                                 } catch (Exception callbackException) {
-                                    System.err.println("OscarsService: Callback error for movie " + movie.id() + ": " + callbackException.getMessage());
+                                    log.error("OscarsService: Callback error for movie {}", movie.id(), callbackException);
                                 }
                             }).start();
                         }
@@ -190,7 +189,7 @@ public class OscarsService {
             if (movie == null) {
                 return List.of();
             }
-            
+
             // Возвращаем количество оскаров как список чисел
             List<Map<String, Object>> oscars = new ArrayList<>();
             if (movie.oscarsCount() != null && movie.oscarsCount() > 0) {
@@ -203,7 +202,7 @@ public class OscarsService {
                     oscars.add(oscar);
                 }
             }
-            
+
             return oscars;
         } catch (Exception e) {
             return List.of();
@@ -229,7 +228,7 @@ public class OscarsService {
                     movie.genre(),
                     movie.screenwriter()
             );
-            
+
             Movie updatedMovie = moviesClient.patchMovie(movieId, patch);
             if (updatedMovie == null) {
                 Map<String, Object> result = new HashMap<>();
@@ -242,23 +241,23 @@ public class OscarsService {
             result.put("updatedCount", 1);
             result.put("updatedMovies", List.of(updatedMovie));
             // Асинхронный коллбэк с задержкой
-            System.out.println("OscarsService: Added Oscars " + oscarsToAdd);
+            log.info("OscarsService: Added Oscars {}", oscarsToAdd);
             if (callbackUrl != null && !callbackUrl.isBlank()) {
                 // Запускаем коллбэк в отдельном потоке
                 new Thread(() -> {
                     try {
                         // Задержка в 3 секунды перед отправкой коллбэка
                         Thread.sleep(3000);
-                        
+
                         Map<String, Object> payload = new HashMap<>();
                         payload.put("movieId", updatedMovie.id());
                         payload.put("category", "UPDATE");
                         payload.put("date", LocalDate.now().toString());
                         payload.put("addedOscars", oscarsToAdd);
                         callbackNotifier.postJson(callbackUrl, payload);
-                        System.out.println("OscarsService: callbackUrl: " + callbackUrl);
+                        log.info("OscarsService: callbackUrl: {}", callbackUrl);
                     } catch (Exception callbackException) {
-                        System.err.println("OscarsService: Callback error for movie " + updatedMovie.id() + ": " + callbackException.getMessage());
+                        log.error("OscarsService: Callback error for movie {}", updatedMovie.id(), callbackException);
                     }
                 }).start();
             }
@@ -282,7 +281,7 @@ public class OscarsService {
             if (movie.oscarsCount() == null || movie.oscarsCount() == 0) {
                 return false;
             }
-            
+
             // Обнуляем количество оскаров
             MoviePatch patch = new MoviePatch(
                     movie.name(),
@@ -293,7 +292,7 @@ public class OscarsService {
                     movie.genre(),
                     movie.screenwriter()
             );
-            
+
             Movie updatedMovie = moviesClient.patchMovie(movieId, patch);
             return updatedMovie != null;
         } catch (Exception e) {

@@ -88,7 +88,7 @@ class MoviesOscarsApiClient {
   private moviesBaseUrl: string
   private oscarsBaseUrl: string
 
-  constructor(moviesBaseUrl = "http://localhost:8081", oscarsBaseUrl = "http://localhost:8080") {
+  constructor(moviesBaseUrl = "", oscarsBaseUrl = "") {
     this.moviesBaseUrl = moviesBaseUrl
     this.oscarsBaseUrl = oscarsBaseUrl
   }
