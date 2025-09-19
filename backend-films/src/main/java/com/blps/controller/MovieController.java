@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.blps.exception.ApiException;
 
 @Path("/movies")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -32,7 +33,7 @@ public class MovieController {
             return Response.status(Response.Status.CREATED).entity(created).build();
         } catch (SQLException e) {
             log.error("Error creating movie", e);
-            return Response.serverError().build();
+            throw new ApiException(Response.Status.INTERNAL_SERVER_ERROR, "Failed to create movie");
         }
     }
 
@@ -44,13 +45,13 @@ public class MovieController {
             Movie movie = movieService.getMovieById(id);
             if (movie == null) {
                 log.info("Movie not found");
-                return Response.noContent().build();
+                throw new ApiException(Response.Status.NOT_FOUND, "Movie not found");
             }
             log.info("Movie found - {}", movie.getName());
             return Response.ok(movie).build();
         } catch (SQLException e) {
             log.error("Error getting movie", e);
-            return Response.serverError().build();
+            throw new ApiException(Response.Status.INTERNAL_SERVER_ERROR, "Failed to get movie");
         }
     }
 
@@ -67,7 +68,7 @@ public class MovieController {
             return Response.ok(result).build();
         } catch (SQLException e) {
             log.error("Error getting movies", e);
-            return Response.serverError().build();
+            throw new ApiException(Response.Status.INTERNAL_SERVER_ERROR, "Failed to get movies");
         }
     }
 
@@ -79,13 +80,13 @@ public class MovieController {
             Movie updated = movieService.updateMovie(id, partialMovie);
             if (updated == null) {
                 log.info("Movie not found for update");
-                return Response.noContent().build();
+                throw new ApiException(Response.Status.NOT_FOUND, "Movie not found");
             }
             log.info("Movie updated successfully");
             return Response.ok(updated).build();
         } catch (SQLException e) {
             log.error("Error updating movie", e);
-            return Response.serverError().build();
+            throw new ApiException(Response.Status.INTERNAL_SERVER_ERROR, "Failed to update movie");
         }
     }
 
@@ -97,13 +98,13 @@ public class MovieController {
             Movie updated = movieService.updateMovie(id, partialMovie);
             if (updated == null) {
                 log.info("Movie not found for update");
-                return Response.noContent().build();
+                throw new ApiException(Response.Status.NOT_FOUND, "Movie not found");
             }
             log.info("Movie updated successfully via PUT");
             return Response.ok(updated).build();
         } catch (SQLException e) {
             log.error("Error updating movie via PUT", e);
-            return Response.serverError().build();
+            throw new ApiException(Response.Status.INTERNAL_SERVER_ERROR, "Failed to update movie");
         }
     }
 
@@ -114,10 +115,13 @@ public class MovieController {
         try {
             boolean deleted = movieService.deleteMovie(id);
             log.info("Movie deletion result: {}", deleted);
-            return deleted ? Response.noContent().build() : Response.notModified().build();
+            if (deleted) {
+                return Response.noContent().build();
+            }
+            throw new ApiException(Response.Status.NOT_FOUND, "Movie not found");
         } catch (SQLException e) {
             log.error("Error deleting movie", e);
-            return Response.serverError().build();
+            throw new ApiException(Response.Status.INTERNAL_SERVER_ERROR, "Failed to delete movie");
         }
     }
 
@@ -128,10 +132,13 @@ public class MovieController {
         try {
             boolean anyDeleted = movieService.deleteMoviesByOscarsCount(count);
             log.info("Movies deleted with oscars count {}: {}", count, anyDeleted);
-            return anyDeleted ? Response.noContent().build() : Response.notModified().build();
+            if (anyDeleted) {
+                return Response.noContent().build();
+            }
+            throw new ApiException(Response.Status.NOT_MODIFIED, "No movies matched deletion criteria");
         } catch (SQLException e) {
             log.error("Error deleting movies by oscars count", e);
-            return Response.serverError().build();
+            throw new ApiException(Response.Status.INTERNAL_SERVER_ERROR, "Failed to delete by oscars count");
         }
     }
 
@@ -147,7 +154,7 @@ public class MovieController {
             return Response.ok(response).build();
         } catch (SQLException e) {
             log.error("Error counting movies", e);
-            return Response.serverError().build();
+            throw new ApiException(Response.Status.INTERNAL_SERVER_ERROR, "Failed to count movies");
         }
     }
 
@@ -161,7 +168,7 @@ public class MovieController {
             return Response.ok(result).build();
         } catch (SQLException e) {
             log.error("Error getting movies by prefix", e);
-            return Response.serverError().build();
+            throw new ApiException(Response.Status.BAD_REQUEST, "Failed to get movies by prefix");
         }
     }
 }
