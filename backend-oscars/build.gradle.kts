@@ -58,3 +58,28 @@ tasks.war {
     archiveFileName.set("backend-oscars-0.0.1-SNAPSHOT.war")
 }
 
+// Задача для сборки фронтенда и интеграции с Spring Boot
+tasks.register<Exec>("buildFrontend") {
+    group = "build"
+    description = "Собирает фронтенд и интегрирует его с Spring Boot"
+    
+    workingDir = file("../frontend")
+    commandLine("npm", "run", "build")
+    
+    doLast {
+        // Копируем собранный фронтенд в static директорию
+        copy {
+            from("../frontend/out")
+            into("src/main/resources/static")
+        }
+        println("✅ Фронтенд успешно интегрирован с Spring Boot!")
+    }
+}
+
+// Задача для полной сборки (фронтенд + бэкенд)
+tasks.register("buildFull") {
+    group = "build"
+    description = "Полная сборка проекта (фронтенд + бэкенд)"
+    dependsOn("buildFrontend", "war")
+}
+
