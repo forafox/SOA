@@ -80,6 +80,22 @@ public class MoviesProxyController {
         
         HttpEntity<?> entity = new HttpEntity<>(body, httpHeaders);
         
-        return restTemplate.exchange(url, method, entity, Object.class);
+        ResponseEntity<Object> downstreamResponse = restTemplate.exchange(url, method, entity, Object.class);
+
+        // Remove downstream CORS headers to avoid duplicates. Spring will apply its own CORS.
+        HttpHeaders sanitizedHeaders = new HttpHeaders();
+        downstreamResponse.getHeaders().forEach((name, values) -> {
+            String lower = name.toLowerCase();
+            if (!lower.equals("access-control-allow-origin") &&
+                !lower.equals("access-control-allow-methods") &&
+                !lower.equals("access-control-allow-headers") &&
+                !lower.equals("access-control-max-age") &&
+                !lower.equals("access-control-expose-headers") &&
+                !lower.equals("access-control-allow-credentials")) {
+                sanitizedHeaders.put(name, values);
+            }
+        });
+
+        return new ResponseEntity<>(downstreamResponse.getBody(), sanitizedHeaders, downstreamResponse.getStatusCode());
     }
 }
