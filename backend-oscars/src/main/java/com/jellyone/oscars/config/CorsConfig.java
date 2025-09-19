@@ -24,15 +24,23 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // Настройка для статических ресурсов фронтенда
+        // Исключаем API endpoints из обработки статических ресурсов
         registry.addResourceHandler("/**")
                 .addResourceLocations("classpath:/static/")
                 .setCachePeriod(3600)
-                .resourceChain(true);
-        
-        // Настройка для API endpoints (чтобы они не перехватывались статическими ресурсами)
-        registry.addResourceHandler("/api/**")
-                .addResourceLocations("classpath:/static/")
-                .setCachePeriod(0);
+                .resourceChain(true)
+                .addResolver(new org.springframework.web.servlet.resource.PathResourceResolver() {
+                    @Override
+                    protected org.springframework.core.io.Resource getResource(String resourcePath, 
+                            org.springframework.core.io.Resource location) throws java.io.IOException {
+                        // Не обрабатываем статические ресурсы для API endpoints
+                        if (resourcePath.startsWith("oscars/") || resourcePath.startsWith("swagger-ui") || 
+                            resourcePath.startsWith("v3/api-docs") || resourcePath.startsWith("swagger-resources")) {
+                            return null;
+                        }
+                        return super.getResource(resourcePath, location);
+                    }
+                });
     }
 
     @Bean
@@ -46,5 +54,10 @@ public class CorsConfig implements WebMvcConfigurer {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public org.springframework.web.client.RestTemplate restTemplate() {
+        return new org.springframework.web.client.RestTemplate();
     }
 }
