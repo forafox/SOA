@@ -11,7 +11,6 @@ public class HelloController {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String hello() {
-        System.out.println("Hello endpoint called");
         return "Hello, JAX-RS!";
     }
 }
