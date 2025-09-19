@@ -3,6 +3,7 @@ package com.jellyone.oscars.service;
 import com.jellyone.oscars.client.MoviesClient;
 import com.jellyone.oscars.model.Movie;
 import com.jellyone.oscars.model.MoviePatch;
+import com.jellyone.oscars.model.MovieUpdateResponse;
 import com.jellyone.oscars.model.Person;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +43,7 @@ public class OscarsService {
         }
     }
 
-    public Map<String, Object> honorMoviesByLength(double minLength, int oscarsToAdd, String callbackUrl) {
+    public MovieUpdateResponse honorMoviesByLength(double minLength, int oscarsToAdd, String callbackUrl) {
         log.info("OscarsService: Honoring movies by length - minLength: {}, oscarsToAdd: {}", minLength, oscarsToAdd);
         try {
             // Получаем все фильмы
@@ -105,20 +106,14 @@ public class OscarsService {
             }
 
             log.info("OscarsService: Successfully updated {} movies", updatedMovies.size());
-            Map<String, Object> result = new HashMap<>();
-            result.put("updatedCount", updatedMovies.size());
-            result.put("updatedMovies", updatedMovies);
-            return result;
+            return new MovieUpdateResponse(updatedMovies.size(), updatedMovies);
         } catch (Exception e) {
             log.error("OscarsService: Error in honorMoviesByLength", e);
-            Map<String, Object> result = new HashMap<>();
-            result.put("updatedCount", 0);
-            result.put("updatedMovies", List.of());
-            return result;
+            return new MovieUpdateResponse(0, List.of());
         }
     }
 
-    public Map<String, Object> honorMoviesWithFewOscars(int maxOscars, int oscarsToAdd, String callbackUrl) {
+    public MovieUpdateResponse honorMoviesWithFewOscars(int maxOscars, int oscarsToAdd, String callbackUrl) {
         try {
             // Получаем все фильмы
             List<Movie> allMovies = moviesClient.getAllMovies();
@@ -170,15 +165,9 @@ public class OscarsService {
                 }
             }
 
-            Map<String, Object> result = new HashMap<>();
-            result.put("updatedCount", updatedMovies.size());
-            result.put("updatedMovies", updatedMovies);
-            return result;
+            return new MovieUpdateResponse(updatedMovies.size(), updatedMovies);
         } catch (Exception e) {
-            Map<String, Object> result = new HashMap<>();
-            result.put("updatedCount", 0);
-            result.put("updatedMovies", List.of());
-            return result;
+            return new MovieUpdateResponse(0, List.of());
         }
     }
 
@@ -209,14 +198,11 @@ public class OscarsService {
         }
     }
 
-    public Map<String, Object> addOscars(long movieId, int oscarsToAdd, String callbackUrl) {
+    public MovieUpdateResponse addOscars(long movieId, int oscarsToAdd, String callbackUrl) {
         try {
             Movie movie = moviesClient.getMovieById(movieId);
             if (movie == null) {
-                Map<String, Object> result = new HashMap<>();
-                result.put("updatedCount", 0);
-                result.put("updatedMovies", List.of());
-                return result;
+                return new MovieUpdateResponse(0, List.of());
             }
 
             MoviePatch patch = new MoviePatch(
@@ -231,15 +217,10 @@ public class OscarsService {
 
             Movie updatedMovie = moviesClient.patchMovie(movieId, patch);
             if (updatedMovie == null) {
-                Map<String, Object> result = new HashMap<>();
-                result.put("updatedCount", 0);
-                result.put("updatedMovies", List.of());
-                return result;
+                return new MovieUpdateResponse(0, List.of());
             }
 
-            Map<String, Object> result = new HashMap<>();
-            result.put("updatedCount", 1);
-            result.put("updatedMovies", List.of(updatedMovie));
+            MovieUpdateResponse result = new MovieUpdateResponse(1, List.of(updatedMovie));
             // Асинхронный коллбэк с задержкой
             log.info("OscarsService: Added Oscars {}", oscarsToAdd);
             if (callbackUrl != null && !callbackUrl.isBlank()) {
@@ -263,10 +244,7 @@ public class OscarsService {
             }
             return result;
         } catch (Exception e) {
-            Map<String, Object> result = new HashMap<>();
-            result.put("updatedCount", 0);
-            result.put("updatedMovies", List.of());
-            return result;
+            return new MovieUpdateResponse(0, List.of());
         }
     }
 

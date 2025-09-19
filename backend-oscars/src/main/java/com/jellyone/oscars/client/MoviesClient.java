@@ -12,6 +12,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -43,19 +44,12 @@ public class MoviesClient {
     }
 
     public List<Movie> getMovies(String name, String genre, String sort, int page, int size) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(baseUrl + "/movies")
-                .queryParam("page", page)
-                .queryParam("size", size);
-        
-        if (name != null) builder.queryParam("name", name);
-        if (genre != null) builder.queryParam("genre", genre);
-        if (sort != null) builder.queryParam("sort", sort);
-        
         try {
             return webClient.get()
-                    .uri(builder.toUriString())
+                    .uri(buildMoviesUri(name, genre, sort, page, size))
                     .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<List<Movie>>() {})
+                    .bodyToMono(new ParameterizedTypeReference<List<Movie>>() {
+                    })
                     .onErrorResume(ex -> {
                         log.error("MoviesClient: Error getting movies list", ex);
                         return reactor.core.publisher.Mono.just(List.of());
@@ -73,7 +67,7 @@ public class MoviesClient {
         List<Movie> allMovies = new ArrayList<>();
         int page = 1;
         int size = 100;
-        
+
         while (true) {
             List<Movie> movies = getMovies(null, null, null, page, size);
             if (movies.isEmpty()) {
@@ -82,11 +76,11 @@ public class MoviesClient {
             allMovies.addAll(movies);
             page++;
         }
-        
+
         log.info("MoviesClient: Retrieved total {} movies", allMovies.size());
         return allMovies;
     }
-    
+
     public Movie patchMovie(long id, MoviePatch patch) {
         log.info("MoviesClient: Patching movie ID {} with oscars count: {}", id, patch.oscarsCount());
         try {
@@ -106,5 +100,23 @@ public class MoviesClient {
             log.error("MoviesClient: Error patching movie {}", id, e);
             return null;
         }
+    }
+
+    private String buildMoviesUri(String name, String genre, String sort, int page, int size) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(baseUrl + "/movies")
+                .queryParam("page", page)
+                .queryParam("size", size);
+
+        Map<String, String> params = Map.of(
+                "name", name,
+                "genre", genre,
+                "sort", sort
+        );
+
+        params.forEach((key, value) -> {
+            if (value != null) builder.queryParam(key, value);
+        });
+
+        return builder.toUriString();
     }
 }
