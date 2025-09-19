@@ -1,5 +1,5 @@
 // Общее хранилище коллбэков для всех API routes
-interface CallbackData {
+export interface CallbackData {
   id: string
   type: string
   data: unknown
@@ -7,7 +7,18 @@ interface CallbackData {
   timestamp: string
 }
 
-let recentCallbacks: CallbackData[] = []
+// Глобальный синглтон, чтобы переживать hot-reload и отдельные импорт-контексты
+// Используем символ на globalThis, чтобы не конфликтовать по именам
+const GLOBAL_CALLBACKS_KEY = '__recent_callbacks_storage__'
+
+// Инициализируем единый разделяемый массив в globalThis
+const sharedStore: CallbackData[] = (globalThis as any)[GLOBAL_CALLBACKS_KEY] ?? []
+if (!(GLOBAL_CALLBACKS_KEY in (globalThis as any))) {
+  ;(globalThis as any)[GLOBAL_CALLBACKS_KEY] = sharedStore
+}
+
+// Ссылка на общий массив
+const recentCallbacks: CallbackData[] = sharedStore
 
 export function addCallback(callback: Omit<CallbackData, 'id' | 'timestamp'>) {
   const newCallback: CallbackData = {
@@ -22,7 +33,9 @@ export function addCallback(callback: Omit<CallbackData, 'id' | 'timestamp'>) {
   recentCallbacks.unshift(newCallback)
   
   // Ограничиваем до 10 последних
-  recentCallbacks = recentCallbacks.slice(0, 10)
+  if (recentCallbacks.length > 10) {
+    recentCallbacks.splice(10)
+  }
   
   console.log('📦 CallbackStorage: Total callbacks in storage:', recentCallbacks.length)
   
