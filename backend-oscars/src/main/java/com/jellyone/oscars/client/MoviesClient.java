@@ -12,7 +12,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -107,15 +106,9 @@ public class MoviesClient {
                 .queryParam("page", page)
                 .queryParam("size", size);
 
-        Map<String, String> params = Map.of(
-                "name", name,
-                "genre", genre,
-                "sort", sort
-        );
-
-        params.forEach((key, value) -> {
-            if (value != null) builder.queryParam(key, value);
-        });
+        if (name != null) builder.queryParam("name", name);
+        if (genre != null) builder.queryParam("genre", genre);
+        if (sort != null) builder.queryParam("sort", sort);
 
         return builder.toUriString();
     }

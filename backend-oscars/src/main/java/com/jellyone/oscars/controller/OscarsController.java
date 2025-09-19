@@ -167,7 +167,7 @@ public class OscarsController {
                     description = "Оскаров для фильма нет"
             )
     })
-    public ResponseEntity<List<Map<String, Object>>> getOscarsByMovie(
+    public ResponseEntity<List<com.jellyone.oscars.model.Award>> getOscarsByMovie(
             @Parameter(description = "ID фильма", required = true, schema = @Schema(type = "integer", minimum = "1"))
             @PathVariable long movieId,
             @Parameter(description = "Номер страницы", schema = @Schema(type = "integer", minimum = "1", defaultValue = "1"))
@@ -175,7 +175,7 @@ public class OscarsController {
             @Parameter(description = "Размер страницы", schema = @Schema(type = "integer", minimum = "1", maximum = "100", defaultValue = "20"))
             @RequestParam(defaultValue = "20") int size
     ) {
-        List<Map<String, Object>> oscars = service.getOscarsByMovie(movieId, page, size);
+        List<com.jellyone.oscars.model.Award> oscars = service.getOscarsByMovie(movieId, page, size);
         return oscars.isEmpty()
                 ? ResponseEntity.noContent().build()
                 : ResponseEntity.ok(oscars);
