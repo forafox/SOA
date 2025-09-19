@@ -1,6 +1,5 @@
 package com.blps;
 
-import com.blps.config.CorsFilter;
 import com.blps.config.ObjectMapperProvider;
 import com.blps.controller.MovieController;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -14,9 +13,7 @@ public class Main {
     public static final String BASE_URI = "http://localhost:8081/api/";
 
     public static void main(String[] args) {
-        System.out.println("Starting Movies API server...");
         startServer();
-        System.out.println("Server started at " + BASE_URI);
 
         try {
             Thread.currentThread().join();
@@ -29,8 +26,7 @@ public class Main {
         ResourceConfig rc = new ResourceConfig()
                 .register(MovieController.class)
                 .register(JacksonFeature.class)
-                .register(ObjectMapperProvider.class)
-                .register(CorsFilter.class);
+                .register(ObjectMapperProvider.class);
 
         GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), rc);
     }

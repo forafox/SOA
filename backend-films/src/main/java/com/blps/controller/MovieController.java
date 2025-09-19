@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.sql.SQLException;
+import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,20 +18,20 @@ import java.util.Map;
 @Path("/movies")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@Slf4j
 public class MovieController {
 
     private final MovieService movieService = new MovieService(new MovieRepositoryImpl());
 
     @POST
     public Response create(Movie movie) {
-        System.out.println("Controller: Creating movie - " + movie.getName());
+        log.info("Creating movie - {}", movie.getName());
         try {
             Movie created = movieService.createMovie(movie);
-            System.out.println("Controller: Movie created successfully with ID: " + created.getId());
+            log.info("Movie created successfully with ID: {}", created.getId());
             return Response.status(Response.Status.CREATED).entity(created).build();
         } catch (SQLException e) {
-            System.err.println("Controller: Error creating movie: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error creating movie", e);
             return Response.serverError().build();
         }
     }
@@ -38,18 +39,17 @@ public class MovieController {
     @GET
     @Path("/{id}")
     public Response get(@PathParam("id") Long id) {
-        System.out.println("Controller: Getting movie by ID - " + id);
+        log.info("Getting movie by ID - {}", id);
         try {
             Movie movie = movieService.getMovieById(id);
             if (movie == null) {
-                System.out.println("Controller: Movie not found");
+                log.info("Movie not found");
                 return Response.noContent().build();
             }
-            System.out.println("Controller: Movie found - " + movie.getName());
+            log.info("Movie found - {}", movie.getName());
             return Response.ok(movie).build();
         } catch (SQLException e) {
-            System.err.println("Controller: Error getting movie: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error getting movie", e);
             return Response.serverError().build();
         }
     }
@@ -60,14 +60,13 @@ public class MovieController {
                               @QueryParam("sort") String sort,
                               @QueryParam("page") @DefaultValue("1") int page,
                               @QueryParam("size") @DefaultValue("20") int size) {
-        System.out.println("Controller: Getting movies with filters");
+        log.info("Getting movies with filters");
         try {
             List<Movie> result = movieService.getMovies(name, genre, sort, page, size);
-            System.out.println("Controller: Returning " + result.size() + " movies");
+            log.info("Returning {} movies", result.size());
             return Response.ok(result).build();
         } catch (SQLException e) {
-            System.err.println("Controller: Error getting movies: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error getting movies", e);
             return Response.serverError().build();
         }
     }
@@ -75,18 +74,17 @@ public class MovieController {
     @PATCH
     @Path("/{id}")
     public Response patch(@PathParam("id") Long id, Movie partialMovie) {
-        System.out.println("Controller: Patching movie with ID - " + id);
+        log.info("Patching movie with ID - {}", id);
         try {
             Movie updated = movieService.updateMovie(id, partialMovie);
             if (updated == null) {
-                System.out.println("Controller: Movie not found for update");
+                log.info("Movie not found for update");
                 return Response.noContent().build();
             }
-            System.out.println("Controller: Movie updated successfully");
+            log.info("Movie updated successfully");
             return Response.ok(updated).build();
         } catch (SQLException e) {
-            System.err.println("Controller: Error updating movie: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error updating movie", e);
             return Response.serverError().build();
         }
     }
@@ -94,18 +92,17 @@ public class MovieController {
     @PUT
     @Path("/{id}")
     public Response put(@PathParam("id") Long id, Movie partialMovie) {
-        System.out.println("Controller: Updating movie with ID - " + id + " via PUT");
+        log.info("Updating movie with ID - {} via PUT", id);
         try {
             Movie updated = movieService.updateMovie(id, partialMovie);
             if (updated == null) {
-                System.out.println("Controller: Movie not found for update");
+                log.info("Movie not found for update");
                 return Response.noContent().build();
             }
-            System.out.println("Controller: Movie updated successfully via PUT");
+            log.info("Movie updated successfully via PUT");
             return Response.ok(updated).build();
         } catch (SQLException e) {
-            System.err.println("Controller: Error updating movie via PUT: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error updating movie via PUT", e);
             return Response.serverError().build();
         }
     }
@@ -113,14 +110,13 @@ public class MovieController {
     @DELETE
     @Path("/{id}")
     public Response delete(@PathParam("id") Long id) {
-        System.out.println("Controller: Deleting movie with ID - " + id);
+        log.info("Deleting movie with ID - {}", id);
         try {
             boolean deleted = movieService.deleteMovie(id);
-            System.out.println("Controller: Movie deletion result: " + deleted);
+            log.info("Movie deletion result: {}", deleted);
             return deleted ? Response.noContent().build() : Response.notModified().build();
         } catch (SQLException e) {
-            System.err.println("Controller: Error deleting movie: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error deleting movie", e);
             return Response.serverError().build();
         }
     }
@@ -128,14 +124,13 @@ public class MovieController {
     @DELETE
     @Path("/oscarsCount/{count}")
     public Response deleteByOscarsCount(@PathParam("count") int count) {
-        System.out.println("Controller: Deleting movies with oscars count - " + count);
+        log.info("Deleting movies with oscars count - {}", count);
         try {
             boolean anyDeleted = movieService.deleteMoviesByOscarsCount(count);
-            System.out.println("Controller: Movies deleted with oscars count " + count + ": " + anyDeleted);
+            log.info("Movies deleted with oscars count {}: {}", count, anyDeleted);
             return anyDeleted ? Response.noContent().build() : Response.notModified().build();
         } catch (SQLException e) {
-            System.err.println("Controller: Error deleting movies by oscars count: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error deleting movies by oscars count", e);
             return Response.serverError().build();
         }
     }
@@ -143,16 +138,15 @@ public class MovieController {
     @GET
     @Path("/count/oscars-less-than/{count}")
     public Response countMoviesWithOscarsLessThan(@PathParam("count") int count) {
-        System.out.println("Controller: Counting movies with oscars less than - " + count);
+        log.info("Counting movies with oscars less than - {}", count);
         try {
             long cnt = movieService.countMoviesWithOscarsLessThan(count);
             Map<String, Object> response = new HashMap<>();
             response.put("count", cnt);
-            System.out.println("Controller: Count result: " + cnt);
+            log.info("Count result: {}", cnt);
             return Response.ok(response).build();
         } catch (SQLException e) {
-            System.err.println("Controller: Error counting movies: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error counting movies", e);
             return Response.serverError().build();
         }
     }
@@ -160,14 +154,13 @@ public class MovieController {
     @GET
     @Path("/name-starts-with/{prefix}")
     public Response getMoviesByNamePrefix(@PathParam("prefix") String prefix) {
-        System.out.println("Controller: Getting movies with name prefix - " + prefix);
+        log.info("Getting movies with name prefix - {}", prefix);
         try {
             List<Movie> result = movieService.getMoviesByNamePrefix(prefix);
-            System.out.println("Controller: Found " + result.size() + " movies with prefix " + prefix);
+            log.info("Found {} movies with prefix {}", result.size(), prefix);
             return Response.ok(result).build();
         } catch (SQLException e) {
-            System.err.println("Controller: Error getting movies by prefix: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error getting movies by prefix", e);
             return Response.serverError().build();
         }
     }
