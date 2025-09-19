@@ -171,15 +171,12 @@ public class MovieRepositoryImpl implements MovieRepository {
         System.out.println("Getting all movies");
         List<Movie> list = new ArrayList<>();
         String sql = "SELECT m.*, c.x AS coord_x, c.y AS coord_y, " +
-                "p.name AS p_name, p.birthday AS p_birthday, p.height AS p_height, p.weight AS p_weight, p.passport_id AS p_passport " +
-                "FROM movies m " +
-                "LEFT JOIN coordinates c ON m.coordinates_id = c.id " +
-                "LEFT JOIN person p ON m.screenwriter_id = p.id";
-
+                "p.name AS p_name, p.birthday AS p_birthday, p.height AS p_height, p.weight AS p_weight, p.passport_id AS p_passport "
+                + "FROM movies m " + "LEFT JOIN coordinates c ON m.coordinates_id = c.id "
+                + "LEFT JOIN person p ON m.screenwriter_id = p.id";
         try (Connection conn = DatabaseConfiguration.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
-
             while (rs.next()) {
                 list.add(mapResultSetToMovie(rs));
             }
@@ -187,6 +184,75 @@ public class MovieRepositoryImpl implements MovieRepository {
         System.out.println("Retrieved " + list.size() + " movies");
         return list;
     }
+
+    @Override
+    public List<Movie> getAll(String name, MovieGenre genre, String sort, int page, int size) throws SQLException {
+        System.out.println("Service: Getting movies with filters - name: " + name + ", genre: " + genre + ", sort: " + sort + ", page: " + page + ", size: " + size);
+
+        List<Movie> list = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT m.*, c.x AS coord_x, c.y AS coord_y, " +
+                        "p.name AS p_name, p.birthday AS p_birthday, p.height AS p_height, p.weight AS p_weight, p.passport_id AS p_passport " +
+                        "FROM movies m " +
+                        "LEFT JOIN coordinates c ON m.coordinates_id = c.id " +
+                        "LEFT JOIN person p ON m.screenwriter_id = p.id WHERE 1=1 "
+        );
+
+        List<Object> params = new ArrayList<>();
+
+
+        if (name != null && !name.isEmpty()) {
+            sql.append("AND m.name ILIKE ? ");
+            params.add("%" + name + "%");
+        }
+
+
+        if (genre != null) {
+            sql.append("AND m.genre = ? ");
+            params.add(genre.name());
+        }
+
+
+        if (sort != null) {
+            boolean desc = sort.contains(":desc");
+            String field = sort.replace(":desc", "");
+
+
+            switch (field) {
+                case "id", "name", "oscarsCount" ->
+                        sql.append("ORDER BY m.").append(field).append(desc ? " DESC " : " ASC ");
+                default -> sql.append("ORDER BY m.id ASC ");
+            }
+        } else {
+            sql.append("ORDER BY m.id ASC ");
+        }
+
+
+        sql.append("LIMIT ? OFFSET ? ");
+        params.add(size);
+        params.add(page * size);
+
+        System.out.println("Executing SQL: " + sql);
+
+        try (Connection conn = DatabaseConfiguration.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+
+
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(mapResultSetToMovie(rs));
+            }
+        }
+
+        System.out.println("Retrieved " + list.size() + " movies");
+        return list;
+    }
+
 
     private Movie mapResultSetToMovie(ResultSet rs) throws SQLException {
         Movie movie = new Movie();
@@ -212,12 +278,12 @@ public class MovieRepositoryImpl implements MovieRepository {
         String name = rs.getString("p_name");
         if (name != null) {
             Person p = new Person(
-                personId,
-                name,
-                rs.getDate("p_birthday") != null ? rs.getDate("p_birthday").toLocalDate() : null,
-                rs.getDouble("p_height"),
-                rs.getLong("p_weight"),
-                rs.getString("p_passport")
+                    personId,
+                    name,
+                    rs.getDate("p_birthday") != null ? rs.getDate("p_birthday").toLocalDate() : null,
+                    rs.getDouble("p_height"),
+                    rs.getLong("p_weight"),
+                    rs.getString("p_passport")
             );
             movie.setScreenwriter(p);
         }
