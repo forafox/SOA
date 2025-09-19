@@ -19,21 +19,12 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web") {
-        exclude(group = "ch.qos.logback", module = "logback-classic")
-        exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
-    }
-    implementation("org.springframework.boot:spring-boot-starter-actuator") {
-        exclude(group = "ch.qos.logback", module = "logback-classic")
-    }
-    implementation("org.springframework.boot:spring-boot-starter-validation") {
-        exclude(group = "ch.qos.logback", module = "logback-classic")
-    }
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0") {
-        exclude(group = "ch.qos.logback", module = "logback-classic")
-    }
-
-    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
 
     compileOnly("jakarta.servlet:jakarta.servlet-api:6.0.0")
 

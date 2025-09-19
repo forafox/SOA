@@ -1,32 +1,40 @@
 package com.jellyone.oscars.service;
-
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
-@Service
+
+@Slf4j
+@Component
 @RequiredArgsConstructor
 public class CallbackNotifier {
-    private final RestTemplate restTemplate;
+
+    private final WebClient webClient;
 
     public void postJson(String callbackUrl, Map<String, Object> payload) {
         if (callbackUrl == null || callbackUrl.isBlank()) {
             return;
         }
+
         try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
-            restTemplate.postForEntity(callbackUrl, request, Void.class);
-        } catch (Exception ignored) {
-            // Swallow callback errors to not affect main flow
+            webClient.post()
+                    .uri(callbackUrl)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(payload)
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .onErrorResume(e -> Mono.empty())
+                    .subscribe();
+        } catch (Exception e) {
+            log.error("Error posting callback url: {}", callbackUrl, e);
         }
     }
 }
+
 
 
