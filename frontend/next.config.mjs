@@ -3,18 +3,27 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
-  async rewrites() {
-    return [
-      {
-        source: '/oscars/:path*',
-        destination: 'http://localhost:8080/oscars/:path*',
-      },
-      {
-        source: '/api/movies/:path*',
-        destination: 'http://localhost:8081/api/movies/:path*',
-      },
-    ];
+  output: 'export',
+  trailingSlash: true,
+  images: {
+    unoptimized: true,
   },
+  // Настраиваем правильные пути для сервера
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/~s367268/soa' : '',
+  basePath: process.env.NODE_ENV === 'production' ? '/~s367268/soa' : '',
+  // Убираем rewrites для статического экспорта
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: '/oscars/:path*',
+  //       destination: 'http://localhost:8080/oscars/:path*',
+  //     },
+  //     {
+  //       source: '/api/movies/:path*',
+  //       destination: 'http://localhost:8081/api/movies/:path*',
+  //     },
+  //   ];
+  // },
 };
 
 export default nextConfig;

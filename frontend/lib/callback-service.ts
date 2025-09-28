@@ -1,4 +1,5 @@
 import { eventEmitter } from "./event-emitter"
+import { callbackUrls } from "./config"
 
 export interface CallbackData {
   movieId?: number
@@ -102,13 +103,7 @@ export class CallbackService {
   }
 
   public getCallbackUrls() {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
-    
-    return {
-      onAwarded: `${baseUrl}/api/callbacks/on-awarded`,
-      notifyAdmins: `${baseUrl}/api/callbacks/notify-admins`,
-      notifyOscarsTeam: `${baseUrl}/api/callbacks/notify-oscars-team`
-    }
+    return callbackUrls
   }
 }
 

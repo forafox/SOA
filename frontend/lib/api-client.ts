@@ -77,6 +77,7 @@ import {
   filterMockMovies,
   paginateMockData,
 } from "./mock-data"
+import { backendConfig } from "./config"
 
 // Configuration for using mock data vs real API
 function getUseMockData(): boolean {
@@ -88,9 +89,10 @@ class MoviesOscarsApiClient {
   private moviesBaseUrl: string
   private oscarsBaseUrl: string
 
-  constructor(moviesBaseUrl = "", oscarsBaseUrl = "") {
-    this.moviesBaseUrl = moviesBaseUrl
-    this.oscarsBaseUrl = oscarsBaseUrl
+  constructor(moviesBaseUrl?: string, oscarsBaseUrl?: string) {
+    // Используем переданные URL или конфигурацию по умолчанию
+    this.moviesBaseUrl = moviesBaseUrl || backendConfig.moviesApiUrl
+    this.oscarsBaseUrl = oscarsBaseUrl || backendConfig.oscarsApiUrl
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
