@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Рабочий скрипт для деплоя статики на сервер
-# Использование: ./deploy-working.sh [сервер_алиас]
+# Использование: ./deploy-working.sh [сервер_алиас] [movies_api_url] [oscars_api_url]
 
 # Получаем алиас сервера из аргумента или запрашиваем
 if [ -z "$1" ]; then
@@ -13,8 +13,22 @@ fi
 
 if [ -z "$SERVER_ALIAS" ]; then
     echo "❌ Ошибка: не указан алиас сервера"
-    echo "Использование: ./deploy-working.sh [сервер_алиас]"
+    echo "Использование: ./deploy-working.sh [сервер_алиас] [movies_api_url] [oscars_api_url]"
     exit 1
+fi
+
+# Получаем URL API (опционально)
+MOVIES_API_URL="$2"
+OSCARS_API_URL="$3"
+
+echo "🔧 Конфигурация API:"
+if [ -n "$MOVIES_API_URL" ]; then
+    echo "   Movies API: $MOVIES_API_URL"
+    export NEXT_PUBLIC_MOVIES_API_URL="$MOVIES_API_URL"
+fi
+if [ -n "$OSCARS_API_URL" ]; then
+    echo "   Oscars API: $OSCARS_API_URL"
+    export NEXT_PUBLIC_OSCARS_API_URL="$OSCARS_API_URL"
 fi
 
 echo "🚀 Начинаем деплой статики на сервер: $SERVER_ALIAS"
