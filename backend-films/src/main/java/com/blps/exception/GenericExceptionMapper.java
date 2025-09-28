@@ -22,6 +22,3 @@ public class GenericExceptionMapper implements ExceptionMapper<Throwable> {
                 .build();
     }
 }
-
-
-

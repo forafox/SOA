@@ -22,6 +22,3 @@ public class ApiExceptionMapper implements ExceptionMapper<ApiException> {
                 .build();
     }
 }
-
-
-
