@@ -21,6 +21,7 @@ repositories {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+        exclude(group = "org.apache.tomcat.embed", module = "tomcat-embed-websocket")
     }
     implementation("org.springframework.boot:spring-boot-starter-webflux") {
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
@@ -31,13 +32,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator") {
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
     }
-    implementation("org.springframework.boot:spring-boot-starter-validation") {
-        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
-    }
+
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
 
     compileOnly("jakarta.servlet:jakarta.servlet-api:6.0.0")
-
     annotationProcessor("org.projectlombok:lombok")
     compileOnly("org.projectlombok:lombok:1.18.28")
 
@@ -45,7 +43,6 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("io.rest-assured:rest-assured:5.4.0")
 }
-
 
 tasks.test {
     useJUnitPlatform()
@@ -58,4 +55,3 @@ tasks.bootJar {
 tasks.war {
     archiveFileName.set("backend-oscars-0.0.1-SNAPSHOT.war")
 }
-
