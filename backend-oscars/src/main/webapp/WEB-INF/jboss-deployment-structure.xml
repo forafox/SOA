@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
+    <deployment>
+        <exclusions>
+            <!-- Исключаем Logback, чтобы использовать WildFly logging -->
+            <module name="org.slf4j.impl"/>
+        </exclusions>
+        <dependencies>
+            <!-- Используем WildFly's logging -->
+            <module name="org.jboss.logging"/>
+        </dependencies>
+    </deployment>
+</jboss-deployment-structure>
