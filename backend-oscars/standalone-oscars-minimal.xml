@@ -261,9 +261,6 @@
             <!-- Для обычного приложения -->
             <http-connector name="http-remoting-connector" connector-ref="default"
                             sasl-authentication-factory="application-sasl-authentication"/>
-
-            <http-connector name="management-http-remoting-connector" connector-ref="management-http"
-                            sasl-authentication-factory="management-sasl-authentication"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
         <subsystem xmlns="urn:jboss:domain:security-manager:1.0">

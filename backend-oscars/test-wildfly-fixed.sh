@@ -1,24 +1,27 @@
 #!/bin/bash
 
-# Test script for WildFly with fixed configuration
-echo "Testing WildFly configuration..."
+echo "=== Тестирование WildFly с исправленной конфигурацией ==="
 
-# Check if WildFly is already running
-if pgrep -f wildfly > /dev/null; then
-    echo "WildFly is already running. Stopping it first..."
-    pkill -f wildfly
-    sleep 3
-fi
+# Остановить все процессы WildFly
+echo "Остановка существующих процессов WildFly..."
+pkill -f wildfly 2>/dev/null || true
+sleep 3
 
-# Set environment variables
+# Проверить, что порты свободны
+echo "Проверка портов..."
+netstat -tuln | grep -E ":(9991|9993|8132|8133)" || echo "Порты свободны"
+
+# Установить переменные окружения
 export JBOSS_HOME=/home/studs/s367268/wildfly-37.0.1.Final
 export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
 
-# Navigate to WildFly bin directory
+# Перейти в директорию WildFly
 cd $JBOSS_HOME/bin
 
-# Start WildFly with the fixed configuration
-echo "Starting WildFly with standalone-oscars-minimal.xml..."
-./standalone.sh -c standalone-oscars-minimal.xml -b 0.0.0.0 -bmanagement 0.0.0.0
+echo "Запуск WildFly с исправленной конфигурацией..."
+echo "Management Console будет доступна на: http://localhost:9991"
+echo "Приложение будет доступно на: http://localhost:8132"
+echo "HTTPS будет доступен на: https://localhost:8133"
 
-echo "WildFly startup completed."
+# Запустить WildFly
+./standalone.sh -c standalone-oscars-minimal.xml -b 0.0.0.0 -bmanagement 0.0.0.0
