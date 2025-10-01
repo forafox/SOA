@@ -19,7 +19,7 @@ import java.util.List;
 public class MoviesClient {
 
     private final WebClient webClient;
-    @Value("${movies.api.base-url:http://localhost:8081}")
+    @Value("${movies.api.base-url:http://localhost:37860/SOA-1.0-SNAPSHOT}")
     private String baseUrl;
 
     private static final String URL_WITH_ID = "/movies/{id}";
