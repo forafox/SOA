@@ -258,9 +258,9 @@
         <subsystem xmlns="urn:jboss:domain:remoting:8.0">
             <endpoint worker="default"/>
 
-            <!-- Для обычного приложения -->
-            <http-connector name="http-remoting-connector" connector-ref="default"
-                            sasl-authentication-factory="application-sasl-authentication"/>
+<!--            &lt;!&ndash; Для обычного приложения &ndash;&gt;-->
+<!--            <http-connector name="http-remoting-connector" connector-ref="default"-->
+<!--                            sasl-authentication-factory="application-sasl-authentication"/>-->
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
         <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
@@ -288,7 +288,7 @@
             <byte-buffer-pool name="default"/>
             <buffer-cache name="default"/>
             <server name="default-server">
-                <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>
+<!--                <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>-->
                 <https-listener name="https" socket-binding="https" ssl-context="applicationSSC" enable-http2="true"/>
                 <host name="default-host" alias="localhost">
                     <location name="/" handler="welcome-content"/>
@@ -319,7 +319,7 @@
     <socket-binding-group name="standard-sockets" default-interface="public"
                           port-offset="${jboss.socket.binding.port-offset:0}">
         <socket-binding name="ajp" port="${jboss.ajp.port:8131}"/>
-        <socket-binding name="http" port="${jboss.http.port:8132}"/>
+<!--        <socket-binding name="http" port="${jboss.http.port:8132}"/>-->
         <socket-binding name="https" port="${jboss.https.port:8133}"/>
 
         <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9991}"/>

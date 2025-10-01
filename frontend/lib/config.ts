@@ -14,10 +14,10 @@ const configs: Record<string, BackendConfig> = {
     environment: 'development'
   },
   
-  // Продакшн на сервере
+  // Продакшн на сервере (через SSH туннель)
   production: {
-    moviesApiUrl: 'https://se.ifmo.ru/~s367268/movies-api',
-    oscarsApiUrl: 'https://se.ifmo.ru/~s367268/oscars-api',
+    moviesApiUrl: 'https://localhost:37861/SOA-1.0-SNAPSHOT',
+    oscarsApiUrl: 'https://localhost:37861/SOA-1.0-SNAPSHOT',
     environment: 'production'
   },
   
