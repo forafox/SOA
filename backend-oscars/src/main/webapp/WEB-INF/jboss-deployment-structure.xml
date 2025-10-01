@@ -8,6 +8,7 @@
         <dependencies>
             <!-- Используем WildFly's logging -->
             <module name="org.jboss.logging"/>
+            <module name="com.fasterxml.classmate" services="import"/>
         </dependencies>
     </deployment>
 </jboss-deployment-structure>

@@ -34,7 +34,7 @@ dependencies {
     }
 
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
-
+    implementation("com.fasterxml:classmate:1.5.1")
     compileOnly("jakarta.servlet:jakarta.servlet-api:6.0.0")
     annotationProcessor("org.projectlombok:lombok")
     compileOnly("org.projectlombok:lombok:1.18.28")

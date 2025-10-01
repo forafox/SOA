@@ -8,8 +8,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 @SpringBootApplication(exclude = {
-    ValidationAutoConfiguration.class, 
-    WebMvcAutoConfiguration.class
+    ValidationAutoConfiguration.class
 })
 public class OscarsApplication extends SpringBootServletInitializer {
 
