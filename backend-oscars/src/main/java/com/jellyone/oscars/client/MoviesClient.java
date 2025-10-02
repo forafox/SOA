@@ -83,7 +83,7 @@ public class MoviesClient {
     public Movie patchMovie(long id, MoviePatch patch) {
         log.info("MoviesClient: Patching movie ID {} with oscars count: {}", id, patch.oscarsCount());
         try {
-            Movie updatedMovie = webClient.put()
+            Movie updatedMovie = webClient.patch()
                     .uri(baseUrl + URL_WITH_ID, id)
                     .bodyValue(patch)
                     .retrieve()

@@ -88,6 +88,15 @@ public class ProxyController {
         return proxyRequest("DELETE", request, queryParams, null);
     }
 
+    @PatchMapping("/movies/**")
+    public ResponseEntity<Object> proxyPatchMovies(
+            HttpServletRequest request,
+            @RequestParam Map<String, String> queryParams,
+            @RequestBody(required = false) Object body
+    ) {
+        return proxyRequest("PATCH", request, queryParams, body);
+    }
+
     private ResponseEntity<Object> proxyRequest(
             String method,
             HttpServletRequest request,
@@ -161,6 +170,20 @@ public class ProxyController {
                             .uri(targetUrl)
                             .retrieve()
                             .bodyToMono(Object.class);
+                    break;
+                case "PATCH":
+                    if (body != null) {
+                        responseMono = webClient.patch()
+                                .uri(targetUrl)
+                                .bodyValue(body)
+                                .retrieve()
+                                .bodyToMono(Object.class);
+                    } else {
+                        responseMono = webClient.patch()
+                                .uri(targetUrl)
+                                .retrieve()
+                                .bodyToMono(Object.class);
+                    }
                     break;
                 default:
                     throw new IllegalArgumentException("Unsupported HTTP method: " + method);
