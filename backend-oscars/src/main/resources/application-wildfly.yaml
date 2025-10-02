@@ -11,7 +11,7 @@ spring:
     resources:
       static-locations: classpath:/static/
       cache:
-        period: 31536000  # Кэш статических ресурсов на год
+        period: 31536000
   mvc:
     static-path-pattern: /**
 
@@ -25,15 +25,12 @@ movies:
     base-url: https://localhost:37861/SOA-1.0-SNAPSHOT/api
     proxy-url: https://localhost:37861/SOA-1.0-SNAPSHOT/api
 
-# Disable Spring Boot's default logging configuration for WildFly
 logging:
   use-logback: false
   config: ""
-  
-# Enable debug logging for troubleshooting
+
 debug: false
 
-# Management endpoints for monitoring
 management:
   endpoints:
     web:

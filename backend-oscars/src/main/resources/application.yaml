@@ -5,7 +5,7 @@ spring:
     resources:
       static-locations: classpath:/static/
       cache:
-        period: 31536000  # Кэш статических ресурсов на год
+        period: 31536000
   mvc:
     static-path-pattern: /**
 server:
