@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState, useCallback } from "react"
+import { isStaticCallbacksMode } from "@/lib/config"
 import { useToast } from "@/hooks/use-toast"
 
 export function SmartCallbackMonitor() {
@@ -149,18 +150,24 @@ export function SmartCallbackMonitor() {
       stopMonitoringRef.current?.()
     }, 30000)
 
-    // Начинаем проверку каждые 2 секунды
-    pollingInterval.current = setInterval(() => {
-      checkCallbacksRef.current?.()
-    }, 2000)
+    // В статическом режиме не включаем опрос, коллбэки придут как имитация
+    if (!isStaticCallbacksMode()) {
+      // Начинаем проверку каждые 2 секунды
+      pollingInterval.current = setInterval(() => {
+        checkCallbacksRef.current?.()
+      }, 2000)
+    }
 
     // Устанавливаем состояние после настройки интервалов
     setIsMonitoring(true)
 
-    // Первая проверка через небольшую задержку, чтобы дать серверу время обработать коллбэк
-    setTimeout(() => {
-      checkCallbacksRef.current?.()
-    }, 500)
+    // В реальном режиме — первая проверка через небольшую задержку,
+    // в статическом режиме — полагаемся на искусственную задержку в сервисе
+    if (!isStaticCallbacksMode()) {
+      setTimeout(() => {
+        checkCallbacksRef.current?.()
+      }, 500)
+    }
   }, [isMonitoring])
 
   startMonitoringRef.current = startMonitoring

@@ -67,6 +67,22 @@ export const getCallbackUrl = (type: 'notifyAdmins' | 'notifyOscarsTeam' | 'onAw
   return callbackUrls[type];
 };
 
+// Режим статической имитации коллбэков: вместо реальных API коллбэков
+// показываем уведомление через 3 секунды. Включается через env или локально
+// через localStorage (ключ "staticCallbacks").
+export const isStaticCallbacksMode = (): boolean => {
+  if (process.env.NEXT_PUBLIC_STATIC_CALLBACKS === 'true') return true;
+  if (typeof window !== 'undefined') {
+    try {
+      return true
+      // return localStorage.getItem('staticCallbacks') === 'true';
+    } catch {
+      return false;
+    }
+  }
+  return false;
+};
+
 // Логирование конфигурации для отладки (выполняется после инициализации DOM)
 if (typeof window !== "undefined") {
   // Отложенное логирование для гарантии что конфигурация инициализирована

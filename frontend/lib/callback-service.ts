@@ -1,5 +1,5 @@
 import { eventEmitter } from "./event-emitter"
-import { callbackUrls } from "./config"
+import { callbackUrls, isStaticCallbacksMode } from "./config"
 
 export interface CallbackData {
   movieId?: number
@@ -30,11 +30,22 @@ export class CallbackService {
   public handleOnAwarded(data: CallbackData) {
     console.log('Processing onAwarded callback:', data)
     
-    // Отправляем событие в UI
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('callback-received', {
-        detail: { type: 'onAwarded', data, status: 'success' }
-      }))
+    // В статическом режиме имитируем коллбэк через 3 секунды
+    if (isStaticCallbacksMode()) {
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('callback-received', {
+            detail: { type: 'onAwarded', data, status: 'success' }
+          }))
+        }
+      }, 3000)
+    } else {
+      // Отправляем событие в UI сразу (при реальном режиме коллбэков)
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('callback-received', {
+          detail: { type: 'onAwarded', data, status: 'success' }
+        }))
+      }
     }
     
     if (this.toast) {
@@ -50,11 +61,20 @@ export class CallbackService {
   public handleNotifyAdmins(data: CallbackData) {
     console.log('Processing notifyAdmins callback:', data)
     
-    // Отправляем событие в UI
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('callback-received', {
-        detail: { type: 'notifyAdmins', data, status: 'success' }
-      }))
+    if (isStaticCallbacksMode()) {
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('callback-received', {
+            detail: { type: 'notifyAdmins', data, status: 'success' }
+          }))
+        }
+      }, 3000)
+    } else {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('callback-received', {
+          detail: { type: 'notifyAdmins', data, status: 'success' }
+        }))
+      }
     }
     
     if (this.toast) {
@@ -70,23 +90,31 @@ export class CallbackService {
   public handleNotifyOscarsTeam(data: CallbackData) {
     console.log('🏆 CallbackService: Processing notifyOscarsTeam callback:', data)
     
-    // Отправляем событие через event emitter
-    console.log('🏆 CallbackService: Emitting event via event emitter')
-    eventEmitter.emit('callback-received', { 
-      type: 'notifyOscarsTeam', 
-      data, 
-      status: 'success' 
-    })
-    
-    // Также отправляем через window events для совместимости
-    if (typeof window !== 'undefined') {
-      console.log('🏆 CallbackService: Sending event to UI via window')
-      window.dispatchEvent(new CustomEvent('callback-received', {
-        detail: { type: 'notifyOscarsTeam', data, status: 'success' }
-      }))
-      console.log('🏆 CallbackService: Event sent to UI via window')
+    const emitNow = () => {
+      // Отправляем событие через event emitter
+      console.log('🏆 CallbackService: Emitting event via event emitter')
+      eventEmitter.emit('callback-received', { 
+        type: 'notifyOscarsTeam', 
+        data, 
+        status: 'success' 
+      })
+      
+      // Также отправляем через window events для совместимости
+      if (typeof window !== 'undefined') {
+        console.log('🏆 CallbackService: Sending event to UI via window')
+        window.dispatchEvent(new CustomEvent('callback-received', {
+          detail: { type: 'notifyOscarsTeam', data, status: 'success' }
+        }))
+        console.log('🏆 CallbackService: Event sent to UI via window')
+      } else {
+        console.log('🏆 CallbackService: window is undefined, cannot send event via window')
+      }
+    }
+
+    if (isStaticCallbacksMode()) {
+      setTimeout(emitNow, 3000)
     } else {
-      console.log('🏆 CallbackService: window is undefined, cannot send event via window')
+      emitNow()
     }
     
     if (this.toast) {

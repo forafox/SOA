@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TestTube, Send } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { isStaticCallbacksMode } from "@/lib/config"
 
 export function CallbackTester() {
   const [loading, setLoading] = useState(false)
@@ -42,19 +43,27 @@ export function CallbackTester() {
         }
       }
 
-      const response = await fetch('/api/callbacks/test', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          type,
-          data: testData[type]
+      let ok = true
+      let result: any = null
+      if (isStaticCallbacksMode()) {
+        // В статическом режиме имитируем успешный ответ
+        result = { callback: { type, data: testData[type], status: 'success' } }
+      } else {
+        const response = await fetch('/api/callbacks/test', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type,
+            data: testData[type]
+          })
         })
-      })
+        ok = response.ok
+        if (ok) result = await response.json()
+      }
 
-      if (response.ok) {
-        const result = await response.json()
+      if (ok) {
         
         toast({
           title: "Тест запущен",
