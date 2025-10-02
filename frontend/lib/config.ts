@@ -1,69 +1,102 @@
-// Конфигурация для разных окружений
-export interface BackendConfig {
-  moviesApiUrl: string
-  oscarsApiUrl: string
-  environment: 'development' | 'production'
-}
+// Конфигурация для встроенного режима (embedded mode)
+// Используется когда фронтенд встроен в Spring приложение
 
-// Конфигурации для разных окружений
-const configs: Record<string, BackendConfig> = {
-  // Локальная разработка
-  development: {
-    moviesApiUrl: 'http://localhost:8081',
-    oscarsApiUrl: 'http://localhost:8080',
-    environment: 'development'
-  },
-  
-  // Продакшн на сервере
-  production: {
-    moviesApiUrl: 'https://se.ifmo.ru/~s367268/movies-api',
-    oscarsApiUrl: 'https://se.ifmo.ru/~s367268/oscars-api',
-    environment: 'production'
-  },
-  
-  // Кастомная конфигурация (можно переопределить через переменные окружения)
-  custom: {
-    moviesApiUrl: process.env.NEXT_PUBLIC_MOVIES_API_URL || 'http://localhost:8081',
-    oscarsApiUrl: process.env.NEXT_PUBLIC_OSCARS_API_URL || 'http://localhost:8080',
-    environment: (process.env.NODE_ENV as 'development' | 'production') || 'development'
-  }
-}
-
-// Функция для получения конфигурации
-export function getBackendConfig(): BackendConfig {
-  // Проверяем переменные окружения
-  if (process.env.NEXT_PUBLIC_MOVIES_API_URL || process.env.NEXT_PUBLIC_OSCARS_API_URL) {
-    return configs.custom
-  }
-  
-  // Определяем окружение
-  const isProduction = process.env.NODE_ENV === 'production'
-  
-  return isProduction ? configs.production : configs.development
-}
-
-// Функция для получения URL callback'ов
-export function getCallbackUrls(): { onAwarded: string; notifyAdmins: string; notifyOscarsTeam: string } {
-  const config = getBackendConfig()
-  
-  // В продакшене используем полные URL, в разработке - относительные
-  if (config.environment === 'production') {
-    const baseUrl = 'https://se.ifmo.ru/~s367268/soa'
-    return {
-      onAwarded: `${baseUrl}/api/callbacks/on-awarded`,
-      notifyAdmins: `${baseUrl}/api/callbacks/notify-admins`,
-      notifyOscarsTeam: `${baseUrl}/api/callbacks/notify-oscars-team`
+// Определяем базовый URL в зависимости от режима работы
+const getBaseUrl = (): string => {
+  // В встроенном режиме API доступно по тому же адресу
+  if (typeof window !== "undefined") {
+    // Включаем context path для WildFly деплоймента
+    const origin = window.location.origin;
+    const pathname = window.location.pathname;
+    
+    // Если мы в WildFly (есть context path), включаем его в base URL
+    if (pathname.startsWith('/backend-oscars')) {
+      const contextPath = pathname.split('/').slice(0, 2).join('/'); // /backend-oscars-X.X.X-SNAPSHOT
+      return origin + contextPath;
     }
-  } else {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
-    return {
-      onAwarded: `${baseUrl}/api/callbacks/on-awarded`,
-      notifyAdmins: `${baseUrl}/api/callbacks/notify-admins`,
-      notifyOscarsTeam: `${baseUrl}/api/callbacks/notify-oscars-team`
+    
+    return origin;
+  }
+  return "";
+};
+
+// Получаем правильную конфигурацию API URLs
+const getMoviesApiUrl = (): string => {
+  if (process.env.NEXT_PUBLIC_MOVIES_API_URL) {
+    return process.env.NEXT_PUBLIC_MOVIES_API_URL;
+  }
+  
+  if (typeof window !== "undefined") {
+    // В браузере определяем по текущему location
+    if (window.location.pathname.startsWith('/backend-oscars')) {
+      return window.location.origin + '/backend-oscars-0.0.1-SNAPSHOT';
     }
   }
-}
+  
+  return getBaseUrl();
+};
 
-// Экспортируем текущую конфигурацию
-export const backendConfig = getBackendConfig()
-export const callbackUrls = getCallbackUrls()
+// Экспортируем конфигурацию для использования в API клиенте
+export const backendConfig = {
+  // Movies API теперь проксируется через этот же сервис
+  get moviesApiUrl() {
+    return getMoviesApiUrl();
+  },
+  
+  // Oscars API обслуживается этим же приложением
+  get oscarsApiUrl() {
+    return getBaseUrl();
+  },
+  
+  environment: process.env.NEXT_PUBLIC_EMBEDDED_MODE ? 'embedded' : 'development'
+};
+
+// Callback URLs для уведомлений
+export const callbackUrls = {
+  // В встроенном режиме callback URL должен указывать на текущий сервер
+  base: getBaseUrl(),
+  
+  // Specific callback endpoints
+  notifyAdmins: `${getBaseUrl()}/api/callbacks/notify-admins`,
+  notifyOscarsTeam: `${getBaseUrl()}/api/callbacks/notify-oscars-team`, 
+  onAwarded: `${getBaseUrl()}/api/callbacks/on-awarded`
+};
+
+// Функция для получения полного URL callback'а
+export const getCallbackUrl = (type: 'notifyAdmins' | 'notifyOscarsTeam' | 'onAwarded'): string => {
+  return callbackUrls[type];
+};
+
+// Режим статической имитации коллбэков: вместо реальных API коллбэков
+// показываем уведомление через 3 секунды. Включается через env или локально
+// через localStorage (ключ "staticCallbacks").
+export const isStaticCallbacksMode = (): boolean => {
+  if (process.env.NEXT_PUBLIC_STATIC_CALLBACKS === 'true') return true;
+  if (typeof window !== 'undefined') {
+    try {
+      return true
+      // return localStorage.getItem('staticCallbacks') === 'true';
+    } catch {
+      return false;
+    }
+  }
+  return false;
+};
+
+// Логирование конфигурации для отладки (выполняется после инициализации DOM)
+if (typeof window !== "undefined") {
+  // Отложенное логирование для гарантии что конфигурация инициализирована
+  setTimeout(() => {
+    console.log('🔧 Frontend config initialized:', {
+      moviesApiUrl: backendConfig.moviesApiUrl,
+      oscarsApiUrl: backendConfig.oscarsApiUrl,
+      environment: backendConfig.environment,
+      baseUrl: getBaseUrl(),
+      currentLocation: {
+        origin: window.location.origin,
+        pathname: window.location.pathname,
+        href: window.location.href
+      }
+    });
+  }, 100);
+}

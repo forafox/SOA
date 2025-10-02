@@ -31,7 +31,10 @@ public class SwaggerConfig {
                 .tags(List.of(
                         new Tag()
                                 .name("Oscars")
-                                .description("Дополнительные операции с наградами и статистикой Оскаров")
+                                .description("Дополнительные операции с наградами и статистикой Оскаров"),
+                        new Tag()
+                                .name("Movies Proxy")
+                                .description("Прокси для перенаправления запросов к фильмам на внешний сервис")
                 ));
     }
 
@@ -40,6 +43,14 @@ public class SwaggerConfig {
         return GroupedOpenApi.builder()
                 .group("oscars")
                 .pathsToMatch("/oscars/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi moviesProxyApi() {
+        return GroupedOpenApi.builder()
+                .group("movies-proxy")
+                .pathsToMatch("/api/movies/**")
                 .build();
     }
 }

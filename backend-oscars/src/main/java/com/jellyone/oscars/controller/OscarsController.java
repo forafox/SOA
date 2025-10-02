@@ -12,12 +12,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping
 @RequiredArgsConstructor
@@ -46,7 +48,9 @@ public class OscarsController {
             )
     })
     public ResponseEntity<List<Person>> getOscarLosers() {
+        log.info("=== GET /oscars/operators/losers ===");
         List<Person> losers = service.getOscarLosers();
+        log.info("Found {} oscar losers", losers.size());
         return losers.isEmpty()
                 ? ResponseEntity.noContent().build()
                 : ResponseEntity.ok(losers);

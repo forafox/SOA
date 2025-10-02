@@ -1,6 +1,6 @@
-// Продакшн конфигурация для сервера
+// Продакшн конфигурация для сервера (через SSH туннель)
 module.exports = {
-  moviesApiUrl: 'https://se.ifmo.ru/~s367268/movies-api',
-  oscarsApiUrl: 'https://se.ifmo.ru/~s367268/oscars-api',
+  moviesApiUrl: 'https://localhost:37861/SOA-1.0-SNAPSHOT',
+  oscarsApiUrl: 'https://localhost:37861/SOA-1.0-SNAPSHOT',
   environment: 'production'
 }

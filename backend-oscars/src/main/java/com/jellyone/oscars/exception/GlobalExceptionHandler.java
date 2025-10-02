@@ -1,6 +1,7 @@
 package com.jellyone.oscars.exception;
 
 import com.jellyone.oscars.model.Error;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -12,12 +13,14 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.server.ResponseStatusException;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpClientErrorException.class)
     public ResponseEntity<Error> handleHttpClientError(HttpClientErrorException ex) {
         HttpStatusCode status = ex.getStatusCode();
+        log.warn("HTTP Client Error: status={}, message={}", status, ex.getMessage());
         if (status == HttpStatus.NO_CONTENT) {
             return ResponseEntity.noContent().build();
         }
@@ -29,11 +32,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpServerErrorException.class)
     public ResponseEntity<Error> handleHttpServerError(HttpServerErrorException ex) {
+        log.error("HTTP Server Error: status={}, message={}", ex.getStatusCode(), ex.getMessage(), ex);
         return buildErrorResponse(ex.getStatusCode(), "External service error: " + ex.getMessage());
     }
 
     @ExceptionHandler({IllegalArgumentException.class, MethodArgumentNotValidException.class})
     public ResponseEntity<Error> handleValidationExceptions(Exception ex) {
+        log.warn("Validation Exception: {}", ex.getMessage(), ex);
         if (ex instanceof MethodArgumentNotValidException validationEx) {
             String message = validationEx.getBindingResult().getFieldErrors().stream()
                     .map(err -> err.getField() + " " + err.getDefaultMessage())
@@ -56,6 +61,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Error> handleGeneric(Exception ex) {
+        log.error("Unhandled Exception: {}", ex.getMessage(), ex);
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error: " + ex.getMessage());
     }
 

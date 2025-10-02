@@ -19,7 +19,7 @@ import java.util.List;
 public class MoviesClient {
 
     private final WebClient webClient;
-    @Value("${movies.api.base-url:http://localhost:8081}")
+    @Value("${movies.api.base-url:https://localhost:37861/SOA-1.0-SNAPSHOT}")
     private String baseUrl;
 
     private static final String URL_WITH_ID = "/movies/{id}";
@@ -83,7 +83,7 @@ public class MoviesClient {
     public Movie patchMovie(long id, MoviePatch patch) {
         log.info("MoviesClient: Patching movie ID {} with oscars count: {}", id, patch.oscarsCount());
         try {
-            Movie updatedMovie = webClient.put()
+            Movie updatedMovie = webClient.patch()
                     .uri(baseUrl + URL_WITH_ID, id)
                     .bodyValue(patch)
                     .retrieve()

@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: backend-oscars
+  main:
+    log-startup-info: true
+  logging:
+    use-logback: false
+  jmx:
+    enabled: true
+  web:
+    resources:
+      static-locations: classpath:/static/
+      cache:
+        period: 31536000
+  mvc:
+    static-path-pattern: /**
+
+server:
+  port: 8132
+  servlet:
+    context-path: /backend-oscars-0.0.1-SNAPSHOT
+
+movies:
+  api:
+    base-url: https://localhost:37861/SOA-1.0-SNAPSHOT/api
+    proxy-url: https://localhost:37861/SOA-1.0-SNAPSHOT/api
+
+logging:
+  use-logback: false
+  config: ""
+
+debug: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,loggers
+  endpoint:
+    health:
+      show-details: always

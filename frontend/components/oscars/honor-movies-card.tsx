@@ -11,6 +11,7 @@ import { ErrorDisplay } from "@/components/error-display"
 import { LoadingSpinner } from "@/components/loading-spinner"
 import { apiClient, type Movie } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
+import { isStaticCallbacksMode } from "@/lib/config"
 import { callbackService } from "@/lib/callback-service"
 
 interface HonorMoviesCardProps {
@@ -53,7 +54,8 @@ export function HonorMoviesCard({ movies, onMoviesUpdated }: HonorMoviesCardProp
       const result = await apiClient.honorMoviesByLength(
         Number.parseFloat(lengthForm.minLength),
         Number.parseInt(lengthForm.oscarsToAdd),
-        callbackUrls.onAwarded,
+        // В статическом режиме URL коллбэка не нужен
+        isStaticCallbacksMode() ? undefined : callbackUrls.onAwarded,
       )
 
       // Update movies list with updated movies
@@ -67,6 +69,15 @@ export function HonorMoviesCard({ movies, onMoviesUpdated }: HonorMoviesCardProp
         title: "Успех",
         description: `Обновлено ${result.updatedCount} фильмов`,
       })
+
+      // В статическом режиме имитируем коллбэк
+      if (isStaticCallbacksMode()) {
+        callbackService.handleOnAwarded({
+          movieId: 1,
+          newOscarsCount: Number.parseInt(lengthForm.oscarsToAdd),
+          updatedMovies: result.updatedMovies
+        })
+      }
 
       setLengthForm({ minLength: "", oscarsToAdd: "" })
     } catch (err) {
@@ -101,7 +112,7 @@ export function HonorMoviesCard({ movies, onMoviesUpdated }: HonorMoviesCardProp
       const result = await apiClient.honorMoviesWithFewOscars(
         Number.parseInt(fewOscarsForm.maxOscars),
         Number.parseInt(fewOscarsForm.oscarsToAdd),
-        callbackUrls.notifyAdmins,
+        isStaticCallbacksMode() ? undefined : callbackUrls.notifyAdmins,
       )
 
       // Update movies list with updated movies
@@ -115,6 +126,15 @@ export function HonorMoviesCard({ movies, onMoviesUpdated }: HonorMoviesCardProp
         title: "Успех",
         description: `Обновлено ${result.updatedCount} фильмов`,
       })
+
+      // В статическом режиме имитируем коллбэк
+      if (isStaticCallbacksMode()) {
+        callbackService.handleNotifyAdmins({
+          movieId: 2,
+          addedOscars: Number.parseInt(fewOscarsForm.oscarsToAdd),
+          updatedMovies: result.updatedMovies
+        })
+      }
 
       setFewOscarsForm({ maxOscars: "", oscarsToAdd: "" })
     } catch (err) {

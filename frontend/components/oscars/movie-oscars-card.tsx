@@ -24,6 +24,7 @@ import { ErrorDisplay } from "@/components/error-display"
 import { LoadingSpinner } from "@/components/loading-spinner"
 import { apiClient, type Movie, type OscarAward } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
+import { isStaticCallbacksMode } from "@/lib/config"
 import { callbackService } from "@/lib/callback-service"
 
 interface MovieOscarsCardProps {
@@ -70,7 +71,7 @@ export function MovieOscarsCard({ movies, onMoviesUpdated }: MovieOscarsCardProp
       const result = await apiClient.addOscarsToMovie(
         Number.parseInt(selectedMovieId), 
         Number.parseInt(oscarsToAdd),
-        callbackUrls.notifyOscarsTeam
+        isStaticCallbacksMode() ? undefined : callbackUrls.notifyOscarsTeam
       )
 
       // Update movies list
@@ -84,6 +85,16 @@ export function MovieOscarsCard({ movies, onMoviesUpdated }: MovieOscarsCardProp
         title: "Успех",
         description: `Добавлено ${result.updatedCount || oscarsToAdd} Оскаров фильму "${selectedMovie?.name}"`,
       })
+
+      // В статическом режиме имитируем коллбэк
+      if (isStaticCallbacksMode()) {
+        callbackService.handleNotifyOscarsTeam({
+          movieId: Number.parseInt(selectedMovieId),
+          addedOscars: Number.parseInt(oscarsToAdd),
+          category: "UPDATE",
+          date: new Date().toISOString()
+        })
+      }
 
       setOscarsToAdd("")
     } catch (err) {

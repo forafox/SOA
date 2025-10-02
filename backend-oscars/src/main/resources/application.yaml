@@ -1,8 +1,16 @@
 spring:
   application:
     name: backend-oscars
+  web:
+    resources:
+      static-locations: classpath:/static/
+      cache:
+        period: 31536000
+  mvc:
+    static-path-pattern: /**
 server:
   port: 8080
 movies:
   api:
-    base-url: http://localhost:8081/api
+    base-url: https://localhost:37861/SOA-1.0-SNAPSHOT/api
+    proxy-url: https://localhost:37861/SOA-1.0-SNAPSHOT/api
