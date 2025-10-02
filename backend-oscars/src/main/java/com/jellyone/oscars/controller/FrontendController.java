@@ -23,10 +23,17 @@ public class FrontendController {
      */
     @GetMapping(value = {
             "/", "/movies", "/movies/**", "/oscars", "/oscars/**", "/dashboard", "/dashboard/**"
-    })
+    }, produces = MediaType.TEXT_HTML_VALUE)
     public String index(HttpServletRequest request) {
         String requestUri = request.getRequestURI();
         String contextPath = request.getContextPath();
+        
+        // Исключаем API запросы из обработки фронтенда
+        if (requestUri.startsWith("/api/")) {
+            log.info("=== FrontendController: Skipping frontend route for API request: {} ===", requestUri);
+            // Возвращаем null, чтобы Spring передал запрос дальше
+            return null;
+        }
         
         log.debug("Serving frontend for route: {} (context: {})", requestUri, contextPath);
         

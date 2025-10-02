@@ -22,7 +22,8 @@ server:
 
 movies:
   api:
-    base-url: http://localhost:37860/SOA-1.0-SNAPSHOT/api
+    base-url: http://localhost:37861/SOA-1.0-SNAPSHOT/api
+    proxy-url: https://localhost:37861/SOA-1.0-SNAPSHOT/api
 
 # Disable Spring Boot's default logging configuration for WildFly
 logging:

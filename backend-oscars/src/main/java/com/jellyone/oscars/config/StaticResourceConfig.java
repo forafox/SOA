@@ -21,6 +21,17 @@ public class StaticResourceConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
         log.info("Configuring static resource handlers for frontend");
+        
+        // Добавляем обработчики для Swagger UI
+        registry
+                .addResourceHandler("/swagger-ui/**")
+                .addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/")
+                .setCachePeriod(86400); // Кэш на день
+                
+        registry
+                .addResourceHandler("/webjars/**")
+                .addResourceLocations("classpath:/META-INF/resources/webjars/")
+                .setCachePeriod(86400); // Кэш на день
 
         // Обслуживание статических файлов Next.js
         registry
