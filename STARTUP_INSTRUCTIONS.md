@@ -86,3 +86,127 @@ oscar service api
 ```bash
 ssh -p 2222 s{student_number}@se.ifmo.ru -Y -L37863:helios:37863
 ```
+
+Генерация ключей
+```bash
+keytool -genkeypair -alias myca -keyalg RSA -keysize 4096 -validity 3650 \
+  -storetype PKCS12 -keystore ./pki/ca.p12 -storepass changeit -keypass changeit \
+  -dname "CN=My Dev Root CA, O=MyOrg, C=RU" \
+  -ext bc=ca:true -ext ku=keyCertSign,cRLSign
+
+```
+```bash
+keytool -exportcert -rfc -alias myca \
+  -keystore ./pki/ca.p12 -storepass changeit \
+  -file ./pki/my-root-ca.crt
+
+```
+```bash
+keytool -genkeypair -alias service-a -keyalg RSA -keysize 2048 -validity 825 \
+  -storetype PKCS12 -keystore ./wildfly-34.0.1.Final/standalone/configuration/server.p12 \
+  -storepass changeit -keypass changeit \
+  -dname "CN=localhost, O=MyOrg, C=RU"
+```
+```bash
+keytool -certreq -alias service-a \
+  -keystore ./wildfly-34.0.1.Final/standalone/configuration/server.p12 -storepass changeit \
+  -file ./wildfly-34.0.1.Final/standalone/configuration/service-a.csr
+```
+```bash
+keytool -gencert -alias myca \
+  -keystore ./pki/ca.p12 -storepass changeit \
+  -infile ./wildfly-34.0.1.Final/standalone/configuration/service-a.csr \
+  -outfile ./wildfly-34.0.1.Final/standalone/configuration/service-a.crt \
+  -rfc -validity 825 \
+  -ext san=dns:localhost \
+  -ext eku=serverAuth \
+  -ext ku=digitalSignature,keyEncipherment
+```
+```bash
+keytool -importcert -noprompt -alias myca \
+  -file ./pki/my-root-ca.crt \
+  -keystore ./wildfly-34.0.1.Final/standalone/configuration/server.p12 -storepass changeit
+```
+```bash
+keytool -importcert -alias service-a \
+  -file ./wildfly-34.0.1.Final/standalone/configuration/service-a.crt \
+  -keystore ./wildfly-34.0.1.Final/standalone/configuration/server.p12 -storepass changeit
+```
+```bash
+keytool -importcert -noprompt -alias myca \
+  -file ./pki/my-root-ca.crt \
+  -keystore ./wildfly-34.0.1.Final/standalone/configuration/truststore.jks -storepass changeit
+
+```
+Настройка конфига
+```bash
+cd wildfly{version}/bin
+./jboss-cli.sh --connect --controller=127.0.0.1:{manage http port}
+```
+
+```bash
+# Elytron: key-store / key-manager / ssl-context
+if (outcome != success) of /subsystem=elytron/key-store=serverKS:read-resource
+  /subsystem=elytron/key-store=serverKS:add(path="server.p12", type="PKCS12", credential-reference={clear-text="changeit"})
+end-if
+
+if (outcome != success) of /subsystem=elytron/key-manager=serverKM:read-resource
+  /subsystem=elytron/key-manager=serverKM:add(key-store=serverKS, credential-reference={clear-text="changeit"})
+end-if
+
+if (outcome != success) of /subsystem=elytron/server-ssl-context=serverSSC:read-resource
+  /subsystem=elytron/server-ssl-context=serverSSC:add(key-manager=serverKM, protocols=["TLSv1.3","TLSv1.2"])
+end-if
+
+# HTTPS socket-binding
+if (outcome != success) of /socket-binding-group=standard-sockets/socket-binding=https:read-resource
+  /socket-binding-group=standard-sockets/socket-binding=https:add(port={https port}, interface=public)
+else
+  /socket-binding-group=standard-sockets/socket-binding=https:write-attribute(name=port, value={https port})
+end-if
+
+# Undertow HTTPS listener (и выключаем HTTP)
+if (outcome == success) of /subsystem=undertow/server=default-server/http-listener=default:read-resource
+  /subsystem=undertow/server=default-server/http-listener=default:remove
+end-if
+
+
+if (outcome != success) of /subsystem=undertow/server=default-server/https-listener=https:read-resource
+  /subsystem=undertow/server=default-server/https-listener=https:add(socket-binding=https, ssl-context=serverSSC, verify-client= NOT_REQUESTED, proxy-address-forwarding=true)
+else
+  /subsystem=undertow/server=default-server/https-listener=https:write-attribute(name=ssl-context, value=serverSSC)
+end-if
+
+# Алиасы хоста
+
+try
+  /subsystem=undertow/server=default-server/host=default-host:list-add(name=alias,value=service-b)
+catch
+end-try
+try
+  /subsystem=undertow/server=default-server/host=default-host:list-add(name=alias,value=localhost)
+catch
+end-try
+try
+  /subsystem=undertow/server=default-server/host=default-host:list-add(name=alias,value=127.0.0.1)
+catch
+end-try
+
+# Remoting через HTTPS + включить http-invoker
+if (outcome == success) of /subsystem=remoting/http-connector=http-remoting-connector:read-resource
+  /subsystem=remoting/http-connector=http-remoting-connector:write-attribute(name=connector-ref, value=https)
+else
+  /subsystem=remoting/http-connector=http-remoting-connector:add(connector-ref=https)
+end-if
+
+if (outcome == success) of /subsystem=undertow/server=default-server/http-invoker=http-invoker:read-resource
+  /subsystem=undertow/server=default-server/http-invoker=http-invoker:write-attribute(name=enabled, value=true)
+end-if
+```
+
+Если будет warning по-типу не найден server.p12, то скопировать его в /wildfly-34.0.1.Final/bin
+
+выход из cli
+```bash
+quit
+```
