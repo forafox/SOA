@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: backend-oscars-test
+  main:
+    log-startup-info: false
+  logging:
+    use-logback: true
+  jmx:
+    enabled: false
+
+server:
+  port: 0  # Random port for tests
+  # No context-path for tests
+
+movies:
+  api:
+    base-url: http://localhost:37860/SOA-1.0-SNAPSHOT/api
+
+# Enable debug logging for tests
+logging:
+  level:
+    com.jellyone.oscars: DEBUG
+    org.springframework.web: DEBUG
+    
+# Management endpoints for testing
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,loggers
+  endpoint:
+    health:
+      show-details: always

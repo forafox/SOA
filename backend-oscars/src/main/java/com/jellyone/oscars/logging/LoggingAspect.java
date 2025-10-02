@@ -19,7 +19,7 @@ public class LoggingAspect {
     public void serviceAndClientLayer() {
     }
 
-//    @Around("serviceAndClientLayer()")
+    @Around("serviceAndClientLayer()")
     public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
         String method = joinPoint.getSignature().toShortString();
         Object[] args = joinPoint.getArgs();

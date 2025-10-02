@@ -19,7 +19,8 @@ import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, 
+                properties = {"spring.profiles.active=test"})
 @AutoConfigureMockMvc
 class OscarsControllerMockBeanIT {
 

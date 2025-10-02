@@ -52,6 +52,10 @@ tasks.bootJar {
     enabled = false
 }
 
+tasks.bootWar {
+    archiveFileName.set("backend-oscars-0.0.1-SNAPSHOT.war")
+}
+
 tasks.war {
     archiveFileName.set("backend-oscars-0.0.1-SNAPSHOT.war")
 }
