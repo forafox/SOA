@@ -2,17 +2,35 @@ spring:
   application:
     name: backend-oscars
   main:
-    log-startup-info: false
+    log-startup-info: true
   logging:
     use-logback: false
+  jmx:
+    enabled: true
 
 server:
   port: 8132
+  servlet:
+    context-path: /backend-oscars-0.0.1-SNAPSHOT
 
 movies:
   api:
     base-url: http://localhost:37860/SOA-1.0-SNAPSHOT/api
 
-# Disable Spring Boot's default logging configuration
+# Disable Spring Boot's default logging configuration for WildFly
 logging:
   use-logback: false
+  config: ""
+  
+# Enable debug logging for troubleshooting
+debug: false
+
+# Management endpoints for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,loggers
+  endpoint:
+    health:
+      show-details: always
