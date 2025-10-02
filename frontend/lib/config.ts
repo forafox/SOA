@@ -29,11 +29,11 @@ const getMoviesApiUrl = (): string => {
   if (typeof window !== "undefined") {
     // В браузере определяем по текущему location
     if (window.location.pathname.startsWith('/backend-oscars')) {
-      return window.location.origin + '/backend-oscars-0.0.1-SNAPSHOT/api';
+      return window.location.origin + '/backend-oscars-0.0.1-SNAPSHOT';
     }
   }
   
-  return getBaseUrl() + '/api';
+  return getBaseUrl();
 };
 
 // Экспортируем конфигурацию для использования в API клиенте
