@@ -103,20 +103,20 @@ keytool -exportcert -rfc -alias myca \
 ```
 ```bash
 keytool -genkeypair -alias service-a -keyalg RSA -keysize 2048 -validity 825 \
-  -storetype PKCS12 -keystore ./wildfly-34.0.1.Final/standalone/configuration/server.p12 \
+  -storetype PKCS12 -keystore ./wildfly-37.0.1.Final/standalone/configuration/server.p12 \
   -storepass changeit -keypass changeit \
   -dname "CN=localhost, O=MyOrg, C=RU"
 ```
 ```bash
 keytool -certreq -alias service-a \
-  -keystore ./wildfly-34.0.1.Final/standalone/configuration/server.p12 -storepass changeit \
-  -file ./wildfly-34.0.1.Final/standalone/configuration/service-a.csr
+  -keystore ./wildfly-37.0.1.Final/standalone/configuration/server.p12 -storepass changeit \
+  -file ./wildfly-37.0.1.Final/standalone/configuration/service-a.csr
 ```
 ```bash
 keytool -gencert -alias myca \
   -keystore ./pki/ca.p12 -storepass changeit \
-  -infile ./wildfly-34.0.1.Final/standalone/configuration/service-a.csr \
-  -outfile ./wildfly-34.0.1.Final/standalone/configuration/service-a.crt \
+  -infile ./wildfly-37.0.1.Final/standalone/configuration/service-a.csr \
+  -outfile ./wildfly-37.0.1.Final/standalone/configuration/service-a.crt \
   -rfc -validity 825 \
   -ext san=dns:localhost \
   -ext eku=serverAuth \
@@ -125,17 +125,17 @@ keytool -gencert -alias myca \
 ```bash
 keytool -importcert -noprompt -alias myca \
   -file ./pki/my-root-ca.crt \
-  -keystore ./wildfly-34.0.1.Final/standalone/configuration/server.p12 -storepass changeit
+  -keystore ./wildfly-37.0.1.Final/standalone/configuration/server.p12 -storepass changeit
 ```
 ```bash
 keytool -importcert -alias service-a \
-  -file ./wildfly-34.0.1.Final/standalone/configuration/service-a.crt \
-  -keystore ./wildfly-34.0.1.Final/standalone/configuration/server.p12 -storepass changeit
+  -file ./wildfly-37.0.1.Final/standalone/configuration/service-a.crt \
+  -keystore ./wildfly-37.0.1.Final/standalone/configuration/server.p12 -storepass changeit
 ```
 ```bash
 keytool -importcert -noprompt -alias myca \
   -file ./pki/my-root-ca.crt \
-  -keystore ./wildfly-34.0.1.Final/standalone/configuration/truststore.jks -storepass changeit
+  -keystore ./wildfly-37.0.1.Final/standalone/configuration/truststore.jks -storepass changeit
 
 ```
 Настройка конфига
@@ -160,9 +160,9 @@ end-if
 
 # HTTPS socket-binding
 if (outcome != success) of /socket-binding-group=standard-sockets/socket-binding=https:read-resource
-  /socket-binding-group=standard-sockets/socket-binding=https:add(port={https port}, interface=public)
+  /socket-binding-group=standard-sockets/socket-binding=https:add(port=8133, interface=public)
 else
-  /socket-binding-group=standard-sockets/socket-binding=https:write-attribute(name=port, value={https port})
+  /socket-binding-group=standard-sockets/socket-binding=https:write-attribute(name=port, value=8133)
 end-if
 
 # Undertow HTTPS listener (и выключаем HTTP)
@@ -204,7 +204,7 @@ if (outcome == success) of /subsystem=undertow/server=default-server/http-invoke
 end-if
 ```
 
-Если будет warning по-типу не найден server.p12, то скопировать его в /wildfly-34.0.1.Final/bin
+Если будет warning по-типу не найден server.p12, то скопировать его в /wildfly-37.0.1.Final/bin
 
 выход из cli
 ```bash

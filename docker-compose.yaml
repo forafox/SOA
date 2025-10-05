@@ -9,5 +9,31 @@ services:
     environment:
       - JAVA_OPTS=
     restart: unless-stopped
+  backend-films:
+    build:
+      context: ./backend-films
+    image: backend-films:local
+    ports:
+      - "8081:8080"
+      - "9991:9990"
+      - "8444:8443"
+    environment:
+      - JAVA_OPTS=
+      - MGMT_USER=admin
+      - MGMT_PASS=admin123!
+    restart: unless-stopped
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_MOVIES_API_URL: "http://localhost:8081/SOA-1.0-SNAPSHOT"
+      NEXT_PUBLIC_OSCARS_API_URL: "http://localhost:8080/backend-oscars-0.0.1-SNAPSHOT"
+    depends_on:
+      - backend-oscars
+      - backend-films
 
 
