@@ -8,20 +8,37 @@ import java.sql.SQLException;
 
 public class DatabaseConfiguration {
 
-    private DatabaseConfiguration() {}
+    private static final Dotenv dotenv = Dotenv.configure()
+            .ignoreIfMissing()
+            .systemProperties()
+            .load();
 
-    private static final Dotenv dotenv = Dotenv.load();
-
-    private static final String URL = dotenv.get("DB_URL");
-    private static final String USER = dotenv.get("DB_USER");
-    private static final String PASSWORD = dotenv.get("DB_PASSWORD");
+    private static final String URL;
+    private static final String USER;
+    private static final String PASSWORD;
 
     static {
+        String tempUrl = null;
+        String tempUser = null;
+        String tempPassword = null;
         try {
             Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            tempUrl = dotenv.get("DB_URL");
+            tempUser = dotenv.get("DB_USER");
+            tempPassword = dotenv.get("DB_PASSWORD");
+
+            System.out.println("🔹 DatabaseConfiguration initialized");
+            System.out.println("🔹 DB_URL = " + tempUrl);
+            System.out.println("🔹 DB_USER = " + tempUser);
+            System.out.println("🔹 DB_PASSWORD = " + (tempPassword != null ? "******" : null));
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
+        URL = tempUrl;
+        USER = tempUser;
+        PASSWORD = tempPassword;
     }
 
     public static Connection getConnection() throws SQLException {
