@@ -2,7 +2,7 @@ spring:
   application:
     name: backend-oscars
 server:
-  port: 8080
+  port: 8081
 movies:
   api:
-    base-url: http://localhost:8081/api
+    base-url: http://backend-films:8080/api
