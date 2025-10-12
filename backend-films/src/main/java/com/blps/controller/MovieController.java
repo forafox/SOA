@@ -8,6 +8,9 @@ import com.blps.service.MovieService;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.annotation.security.RolesAllowed;
 
 import java.sql.SQLException;
 import lombok.extern.slf4j.Slf4j;
@@ -19,10 +22,14 @@ import com.blps.exception.ApiException;
 @Path("/movies")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@RolesAllowed("authenticated")
 @Slf4j
 public class MovieController {
 
     private final MovieService movieService = new MovieService(new MovieRepositoryImpl());
+    
+    @Context
+    private SecurityContext securityContext;
 
     @POST
     public Response create(Movie movie) {

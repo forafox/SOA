@@ -78,6 +78,7 @@ import {
   paginateMockData,
 } from "./mock-data"
 import { backendConfig } from "./config"
+import samlAuthService from "./oauth2-auth"
 
 // Configuration for using mock data vs real API
 function getUseMockData(): boolean {
@@ -97,7 +98,7 @@ class MoviesOscarsApiClient {
 
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
-      let errorMessage = `HTTP ${response.status}: ${response.statusText}`
+      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
 
       try {
         const errorData = await response.json()
@@ -126,6 +127,20 @@ class MoviesOscarsApiClient {
     }
   }
 
+  private getAuthHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Add SAML authentication headers if user is authenticated
+    if (samlAuthService.isUserAuthenticated()) {
+      const authHeaders = samlAuthService.getAuthHeaders();
+      Object.assign(headers, authHeaders);
+    }
+
+    return headers;
+  }
+
   // Movies API methods
   async getMovies(filters: MovieFilters = {}, pagination: PaginationParams = {}): Promise<Movie[]> {
     if (getUseMockData()) {
@@ -141,7 +156,9 @@ class MoviesOscarsApiClient {
     if (pagination.page) params.append("page", pagination.page.toString())
     if (pagination.size) params.append("size", pagination.size.toString())
 
-    const response = await fetch(`${this.moviesBaseUrl}/api/movies?${params}`)
+    const response = await fetch(`${this.moviesBaseUrl}/api/movies?${params}`, {
+      headers: this.getAuthHeaders()
+    })
     return this.handleResponse<Movie[]>(response)
   }
 
@@ -150,7 +167,9 @@ class MoviesOscarsApiClient {
       return getMockMovieById(id) || null
     }
 
-    const response = await fetch(`${this.moviesBaseUrl}/api/movies/${id}`)
+    const response = await fetch(`${this.moviesBaseUrl}/api/movies/${id}`, {
+      headers: this.getAuthHeaders()
+    })
     return this.handleResponse<Movie>(response)
   }
 
@@ -199,9 +218,7 @@ class MoviesOscarsApiClient {
 
     const response = await fetch(`${this.moviesBaseUrl}/api/movies`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: this.getAuthHeaders(),
       body: JSON.stringify(movieData),
     })
     return this.handleResponse<Movie>(response)

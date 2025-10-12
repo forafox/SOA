@@ -1,4 +1,6 @@
 CREATE DATABASE filmsdb;
+CREATE DATABASE oscarsdb;
+CREATE DATABASE keycloakdb;
 
 
 \connect filmsdb;
