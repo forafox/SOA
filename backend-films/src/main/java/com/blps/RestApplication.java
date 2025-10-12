@@ -1,5 +1,6 @@
 package com.blps;
 
+import com.blps.config.CorsFilter;
 import com.blps.controller.MovieController;
 import com.blps.exception.ApiExceptionMapper;
 import com.blps.exception.GenericExceptionMapper;
@@ -18,6 +19,7 @@ public class RestApplication extends Application {
         resources.add(MovieController.class);
         resources.add(ApiExceptionMapper.class);
         resources.add(GenericExceptionMapper.class);
+        resources.add(CorsFilter.class);
         return resources;
     }
 }

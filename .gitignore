@@ -20,3 +20,4 @@ build/
 
 # Docker
 *.pid
+/backend-oscars/src/main/resources/static/

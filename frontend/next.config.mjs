@@ -3,14 +3,14 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
- // output: 'export',
+  // output: 'export',
   trailingSlash: true,
   images: {
     unoptimized: true,
   },
-  // Настраиваем правильные пути для сервера
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/~s367268/soa' : '',
-  basePath: process.env.NODE_ENV === 'production' ? '/~s367268/soa' : '',
+  // Настраиваем правильные пути для сервера в зависимости от профиля
+  assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || '',
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
   // Убираем rewrites для статического экспорта
   // async rewrites() {
   //   return [

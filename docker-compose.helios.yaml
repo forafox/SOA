@@ -54,10 +54,11 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_MOVIES_API_URL: "http://localhost:8080"
-      NEXT_PUBLIC_OSCARS_API_URL: "http://localhost:8081"
-      # Для Docker профиля - без basePath
-      NEXT_PUBLIC_BASE_PATH: ""
+      # Для Helios профиля - используем внешние API
+      NEXT_PUBLIC_MOVIES_API_URL: "https://se.ifmo.ru/~s367268/movies-api"
+      NEXT_PUBLIC_OSCARS_API_URL: "https://se.ifmo.ru/~s367268/oscars-api"
+      # Для Helios профиля - с basePath
+      NEXT_PUBLIC_BASE_PATH: "/~s367268/soa"
 
     depends_on:
       - backend-oscars

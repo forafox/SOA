@@ -11,7 +11,7 @@ RUN npm install --legacy-peer-deps
 # Копируем исходники
 COPY . ./
 
-# Сборка проекта
+# Сборка проекта для development
 RUN npm run build
 
 EXPOSE 3000

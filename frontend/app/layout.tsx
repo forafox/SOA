@@ -2,7 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
-import { Analytics } from "@vercel/analytics/next"
+// import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/toaster"
 import { GlobalCallbackNotifications } from "@/components/global-callback-notifications"
 import { SmartCallbackMonitor } from "@/components/smart-callback-monitor"
@@ -28,7 +28,7 @@ export default function RootLayout({
           <Toaster />
           <GlobalCallbackNotifications />
           <SmartCallbackMonitor />
-          <Analytics />
+          {/* <Analytics /> */}
         </Suspense>
       </body>
     </html>

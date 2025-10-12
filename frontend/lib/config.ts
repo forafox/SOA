@@ -5,41 +5,56 @@ export interface BackendConfig {
   environment: 'development' | 'production'
 }
 
-// Конфигурации для разных окружений
-const configs: Record<string, BackendConfig> = {
-  // Локальная разработка
-  development: {
-    moviesApiUrl: 'http://localhost:8081',
-    oscarsApiUrl: 'http://localhost:8080',
-    environment: 'development'
-  },
-  
-  // Продакшн на сервере
-  production: {
-    moviesApiUrl: 'https://se.ifmo.ru/~s367268/movies-api',
-    oscarsApiUrl: 'https://se.ifmo.ru/~s367268/oscars-api',
-    environment: 'production'
-  },
-  
-  // Кастомная конфигурация (можно переопределить через переменные окружения)
-  custom: {
-    moviesApiUrl: process.env.NEXT_PUBLIC_MOVIES_API_URL || 'http://localhost:8081',
-    oscarsApiUrl: process.env.NEXT_PUBLIC_OSCARS_API_URL || 'http://localhost:8080',
-    environment: (process.env.NODE_ENV as 'development' | 'production') || 'development'
-  }
+// Конфигурация для разных окружений
+export interface BackendConfig {
+  moviesApiUrl: string
+  oscarsApiUrl: string
+  environment: 'development' | 'production'
 }
 
-// Функция для получения конфигурации
+// Функция для получения конфигурации во время выполнения
 export function getBackendConfig(): BackendConfig {
-  // Проверяем переменные окружения
-  if (process.env.NEXT_PUBLIC_MOVIES_API_URL || process.env.NEXT_PUBLIC_OSCARS_API_URL) {
-    return configs.custom
+  // Проверяем переменные окружения во время сборки
+  const moviesApiUrl = process.env.NEXT_PUBLIC_MOVIES_API_URL
+  const oscarsApiUrl = process.env.NEXT_PUBLIC_OSCARS_API_URL
+  
+  // Отладочная информация
+  console.log('🔧 Config Debug:', {
+    moviesApiUrl,
+    oscarsApiUrl,
+    NODE_ENV: process.env.NODE_ENV,
+    NEXT_PUBLIC_MOVIES_API_URL: process.env.NEXT_PUBLIC_MOVIES_API_URL,
+    NEXT_PUBLIC_OSCARS_API_URL: process.env.NEXT_PUBLIC_OSCARS_API_URL
+  })
+  
+  // Если переменные окружения заданы, используем их
+  if (moviesApiUrl && oscarsApiUrl) {
+    console.log('✅ Using environment variables:', { moviesApiUrl, oscarsApiUrl })
+    return {
+      moviesApiUrl,
+      oscarsApiUrl,
+      environment: (process.env.NODE_ENV as 'development' | 'production') || 'development'
+    }
   }
   
-  // Определяем окружение
+  // Иначе определяем по NODE_ENV
   const isProduction = process.env.NODE_ENV === 'production'
   
-  return isProduction ? configs.production : configs.development
+  if (isProduction) {
+    console.log('🌐 Using production config')
+    return {
+      moviesApiUrl: 'https://se.ifmo.ru/~s367268/movies-api',
+      oscarsApiUrl: 'https://se.ifmo.ru/~s367268/oscars-api',
+      environment: 'production'
+    }
+  } else {
+    console.log('🐳 Using development config')
+    return {
+      moviesApiUrl: 'http://localhost:8080',
+      oscarsApiUrl: 'http://localhost:8081',
+      environment: 'development'
+    }
+  }
 }
 
 // Функция для получения URL callback'ов
