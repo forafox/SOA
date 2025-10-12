@@ -43,8 +43,10 @@ export function getBackendConfig(): BackendConfig {
   if (isProduction) {
     console.log('🌐 Using production config')
     return {
-      moviesApiUrl: 'https://se.ifmo.ru/~s367268/movies-api',
-      oscarsApiUrl: 'https://se.ifmo.ru/~s367268/oscars-api',
+      // moviesApiUrl: 'https://se.ifmo.ru/~s367268/movies-api',
+      // oscarsApiUrl: 'https://se.ifmo.ru/~s367268/oscars-api',
+      moviesApiUrl: 'http://localhost:8080',
+      oscarsApiUrl: 'http://localhost:8081',
       environment: 'production'
     }
   } else {
