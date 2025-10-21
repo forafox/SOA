@@ -16,8 +16,8 @@ const configs: Record<string, BackendConfig> = {
   
   // Продакшн на сервере
   production: {
-    moviesApiUrl: 'https://se.ifmo.ru/~s367268/movies-api',
-    oscarsApiUrl: 'https://se.ifmo.ru/~s367268/oscars-api',
+    moviesApiUrl: 'http://localhost:8081',
+    oscarsApiUrl: 'http://localhost:8080',
     environment: 'production'
   },
   
