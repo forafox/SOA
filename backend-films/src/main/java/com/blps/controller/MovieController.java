@@ -8,6 +8,7 @@ import com.blps.service.MovieService;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
 
 import java.sql.SQLException;
 import lombok.extern.slf4j.Slf4j;
@@ -24,13 +25,32 @@ public class MovieController {
 
     private final MovieService movieService = new MovieService(new MovieRepositoryImpl());
 
+    private ResponseBuilder addCorsHeaders(ResponseBuilder response) {
+        return response
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+                .header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+                .header("Access-Control-Max-Age", "3600");
+    }
+
+    @OPTIONS
+    @Path("{path:.*}")
+    public Response options(@PathParam("path") String path) {
+        return addCorsHeaders(Response.ok()).build();
+    }
+
+    @OPTIONS
+    public Response optionsRoot() {
+        return addCorsHeaders(Response.ok()).build();
+    }
+
     @POST
     public Response create(Movie movie) {
         log.info("Creating movie - {}", movie.getName());
         try {
             Movie created = movieService.createMovie(movie);
             log.info("Movie created successfully with ID: {}", created.getId());
-            return Response.status(Response.Status.CREATED).entity(created).build();
+            return addCorsHeaders(Response.status(Response.Status.CREATED).entity(created)).build();
         } catch (SQLException e) {
             log.error("Error creating movie", e);
             throw new ApiException(Response.Status.INTERNAL_SERVER_ERROR, "Failed to create movie");
@@ -48,7 +68,7 @@ public class MovieController {
                 throw new ApiException(Response.Status.NOT_FOUND, "Movie not found");
             }
             log.info("Movie found - {}", movie.getName());
-            return Response.ok(movie).build();
+            return addCorsHeaders(Response.ok(movie)).build();
         } catch (SQLException e) {
             log.error("Error getting movie", e);
             throw new ApiException(Response.Status.INTERNAL_SERVER_ERROR, "Failed to get movie");
@@ -65,7 +85,7 @@ public class MovieController {
         try {
             List<Movie> result = movieService.getMovies(name, genre, sort, page, size);
             log.info("Returning {} movies", result.size());
-            return Response.ok(result).build();
+            return addCorsHeaders(Response.ok(result)).build();
         } catch (SQLException e) {
             log.error("Error getting movies", e);
             throw new ApiException(Response.Status.INTERNAL_SERVER_ERROR, "Failed to get movies");
@@ -83,7 +103,7 @@ public class MovieController {
                 throw new ApiException(Response.Status.NOT_FOUND, "Movie not found");
             }
             log.info("Movie updated successfully");
-            return Response.ok(updated).build();
+            return addCorsHeaders(Response.ok(updated)).build();
         } catch (SQLException e) {
             log.error("Error updating movie", e);
             throw new ApiException(Response.Status.INTERNAL_SERVER_ERROR, "Failed to update movie");
@@ -101,7 +121,7 @@ public class MovieController {
                 throw new ApiException(Response.Status.NOT_FOUND, "Movie not found");
             }
             log.info("Movie updated successfully via PUT");
-            return Response.ok(updated).build();
+            return addCorsHeaders(Response.ok(updated)).build();
         } catch (SQLException e) {
             log.error("Error updating movie via PUT", e);
             throw new ApiException(Response.Status.INTERNAL_SERVER_ERROR, "Failed to update movie");
@@ -116,7 +136,7 @@ public class MovieController {
             boolean deleted = movieService.deleteMovie(id);
             log.info("Movie deletion result: {}", deleted);
             if (deleted) {
-                return Response.noContent().build();
+                return addCorsHeaders(Response.noContent()).build();
             }
             throw new ApiException(Response.Status.NOT_FOUND, "Movie not found");
         } catch (SQLException e) {
@@ -133,7 +153,7 @@ public class MovieController {
             boolean anyDeleted = movieService.deleteMoviesByOscarsCount(count);
             log.info("Movies deleted with oscars count {}: {}", count, anyDeleted);
             if (anyDeleted) {
-                return Response.noContent().build();
+                return addCorsHeaders(Response.noContent()).build();
             }
             throw new ApiException(Response.Status.NOT_MODIFIED, "No movies matched deletion criteria");
         } catch (SQLException e) {
@@ -151,7 +171,7 @@ public class MovieController {
             Map<String, Object> response = new HashMap<>();
             response.put("count", cnt);
             log.info("Count result: {}", cnt);
-            return Response.ok(response).build();
+            return addCorsHeaders(Response.ok(response)).build();
         } catch (SQLException e) {
             log.error("Error counting movies", e);
             throw new ApiException(Response.Status.INTERNAL_SERVER_ERROR, "Failed to count movies");
@@ -165,7 +185,7 @@ public class MovieController {
         try {
             List<Movie> result = movieService.getMoviesByNamePrefix(prefix);
             log.info("Found {} movies with prefix {}", result.size(), prefix);
-            return Response.ok(result).build();
+            return addCorsHeaders(Response.ok(result)).build();
         } catch (SQLException e) {
             log.error("Error getting movies by prefix", e);
             throw new ApiException(Response.Status.BAD_REQUEST, "Failed to get movies by prefix");

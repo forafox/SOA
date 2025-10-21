@@ -21,6 +21,7 @@ import java.util.Map;
 @RestController
 @RequestMapping
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*", maxAge = 3600)
 @Tag(name = "Oscars", description = "Дополнительные операции с наградами и статистикой Оскаров")
 public class OscarsController {
     private final OscarsService service;
