@@ -8,9 +8,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Настраиваем правильные пути для сервера
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/~s367268/soa' : '',
-  basePath: process.env.NODE_ENV === 'production' ? '/~s367268/soa' : '',
+  // Убираем basePath для Docker, чтобы API routes работали
+  // assetPrefix: process.env.NODE_ENV === 'production' ? '/~s367268/soa' : '',
+  // basePath: process.env.NODE_ENV === 'production' ? '/~s367268/soa' : '',
   // Убираем rewrites для статического экспорта
   // async rewrites() {
   //   return [
