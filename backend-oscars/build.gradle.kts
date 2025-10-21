@@ -10,12 +10,15 @@ version = "0.0.1-SNAPSHOT"
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://build.shibboleth.net/nexus/content/groups/public/")
+    }
 }
 
 dependencies {
@@ -25,6 +28,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+    
+    // Spring Security with SAML2 as Service Provider (Keycloak as IdP)
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.security:spring-security-saml2-service-provider")
 
     compileOnly("jakarta.servlet:jakarta.servlet-api:6.0.0")
 
@@ -42,10 +49,10 @@ tasks.test {
 }
 
 tasks.bootJar {
-    enabled = false
+    enabled = true
 }
 
 tasks.war {
-    archiveFileName.set("backend-oscars-0.0.1-SNAPSHOT.war")
+    enabled = false
 }
 

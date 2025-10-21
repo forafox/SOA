@@ -1,0 +1,94 @@
+{
+  "realm": "soa-realm",
+  "enabled": true,
+  "displayName": "SOA Realm with SAML",
+  "saml": {
+    "enabled": true,
+    "assertionLifespan": 300,
+    "assertionSignatureRequired": false,
+    "clientSignatureRequired": false,
+    "encryptAssertions": false,
+    "forceNameIdFormat": false,
+    "nameIdFormat": "username",
+    "signatureAlgorithm": "RSA_SHA256",
+    "signatureCanonicalizationMethod": "http://www.w3.org/2001/10/xml-exc-c14n#",
+    "singleLogoutServiceUrlPost": "http://localhost:8082/realms/soa-realm/protocol/saml",
+    "singleLogoutServiceUrlRedirect": "http://localhost:8082/realms/soa-realm/protocol/saml",
+    "singleSignOnServiceUrlPost": "http://localhost:8082/realms/soa-realm/protocol/saml",
+    "singleSignOnServiceUrlRedirect": "http://localhost:8082/realms/soa-realm/protocol/saml"
+  },
+  "clients": [
+    {
+      "clientId": "backend-films-saml",
+      "name": "Backend Films SAML Client",
+      "description": "JAX-RS Backend Films Service with SAML",
+      "enabled": true,
+      "protocol": "saml",
+      "clientAuthenticatorType": "client-secret",
+      "secret": "backend-films-saml-secret",
+      "redirectUris": ["http://localhost:8081/*"],
+      "attributes": {
+        "saml.assertion.signature": "false",
+        "saml.force.post.binding": "false",
+        "saml.multivalued.roles": "false",
+        "saml.encrypt": "false",
+        "saml.server.signature": "false",
+        "saml.server.signature.keyinfo.ext": "false",
+        "saml_force_name_id_format": "false",
+        "saml.client.signature": "false",
+        "saml.authnstatement": "false",
+        "saml.onetimeuse.condition": "false"
+      },
+      "defaultClientScopes": ["role_list", "profile", "email", "roles"],
+      "optionalClientScopes": ["address", "phone", "offline_access"]
+    },
+    {
+      "clientId": "backend-oscars-saml",
+      "name": "Backend Oscars SAML Client", 
+      "description": "Spring Boot Backend Oscars Service with SAML",
+      "enabled": true,
+      "protocol": "saml",
+      "clientAuthenticatorType": "client-secret",
+      "secret": "backend-oscars-saml-secret",
+      "redirectUris": ["http://localhost:8080/*"],
+      "attributes": {
+        "saml.assertion.signature": "false",
+        "saml.force.post.binding": "false",
+        "saml.multivalued.roles": "false",
+        "saml.encrypt": "false",
+        "saml.server.signature": "false",
+        "saml.server.signature.keyinfo.ext": "false",
+        "saml_force_name_id_format": "false",
+        "saml.client.signature": "false",
+        "saml.authnstatement": "false",
+        "saml.onetimeuse.condition": "false"
+      },
+      "defaultClientScopes": ["role_list", "profile", "email", "roles"],
+      "optionalClientScopes": ["address", "phone", "offline_access"]
+    },
+    {
+      "clientId": "frontend-saml",
+      "name": "Frontend SAML Client",
+      "description": "React Frontend Application with SAML",
+      "enabled": true,
+      "protocol": "saml",
+      "clientAuthenticatorType": "client-secret",
+      "secret": "frontend-saml-secret",
+      "redirectUris": ["http://localhost:3000/*"],
+      "attributes": {
+        "saml.assertion.signature": "false",
+        "saml.force.post.binding": "false",
+        "saml.multivalued.roles": "false",
+        "saml.encrypt": "false",
+        "saml.server.signature": "false",
+        "saml.server.signature.keyinfo.ext": "false",
+        "saml_force_name_id_format": "false",
+        "saml.client.signature": "false",
+        "saml.authnstatement": "false",
+        "saml.onetimeuse.condition": "false"
+      },
+      "defaultClientScopes": ["role_list", "profile", "email", "roles"],
+      "optionalClientScopes": ["address", "phone", "offline_access"]
+    }
+  ]
+}

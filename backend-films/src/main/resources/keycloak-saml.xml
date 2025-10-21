@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<keycloak-saml-adapter xmlns="urn:keycloak:saml:adapter"
+                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                       xsi:schemaLocation="urn:keycloak:saml:adapter https://www.keycloak.org/schema/keycloak_saml_adapter_1_8.xsd">
+    <SP entityID="backend-films"
+        sslPolicy="EXTERNAL"
+        nameIDPolicyFormat="urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"
+        logoutPage="/logout.jsp"
+        forceAuthentication="false"
+        isPassive="false"
+        turnOffChangeSessionIdOnLogin="false"
+        autodetectBearerOnly="false">
+        <Keys>
+            <Key signing="true" encryption="false">
+                <KeyStore file="META-INF/keystore.jks" resource="META-INF/keystore.jks" password="password"/>
+                <Key alias="saml-key" password="password"/>
+            </Key>
+        </Keys>
+        <PrincipalNameMapping policy="FROM_NAME_ID"/>
+        <RoleIdentifiers>
+            <Attribute name="Role"/>
+        </RoleIdentifiers>
+        <RoleMappingsProvider id="properties-based-role-mapper">
+            <Property name="properties.location" value="WEB-INF/role-mappings.properties"/>
+        </RoleMappingsProvider>
+        <IDP entityID="idp"
+             sslPolicy="EXTERNAL"
+             allowCreate="true"
+             isPassive="false"
+             turnOffChangeSessionIdOnLogin="false"
+             autodetectBearerOnly="false">
+            <SingleSignOnService signRequest="true"
+                                validateResponseSignature="true"
+                                requestBinding="POST"
+                                bindingUrl="http://localhost:8082/realms/soa-realm/protocol/saml"/>
+            <SingleLogoutService signRequest="true"
+                               signResponse="true"
+                               validateRequestSignature="true"
+                               validateResponseSignature="true"
+                               requestBinding="POST"
+                               responseBinding="POST"
+                               postBindingUrl="http://localhost:8082/realms/soa-realm/protocol/saml"
+                               redirectBindingUrl="http://localhost:8082/realms/soa-realm/protocol/saml"/>
+            <Keys>
+                <Key signing="true" encryption="false">
+                    <KeyStore file="META-INF/keystore.jks" resource="META-INF/keystore.jks" password="password"/>
+                    <Key alias="saml-key" password="password"/>
+                </Key>
+            </Keys>
+        </IDP>
+    </SP>
+</keycloak-saml-adapter>

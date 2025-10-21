@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee 
+         https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+
+    <display-name>SOA Backend Films</display-name>
+    
+    <!-- SAML Filter -->
+    <filter>
+        <filter-name>SamlFilter</filter-name>
+        <filter-class>com.blps.config.SamlFilter</filter-class>
+    </filter>
+    
+    <filter-mapping>
+        <filter-name>SamlFilter</filter-name>
+        <url-pattern>/api/*</url-pattern>
+    </filter-mapping>
+    
+    <!-- SAML Callback Servlet -->
+    <servlet>
+        <servlet-name>SamlCallbackServlet</servlet-name>
+        <servlet-class>com.blps.config.SamlCallbackServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>SamlCallbackServlet</servlet-name>
+        <url-pattern>/saml/callback</url-pattern>
+    </servlet-mapping>
+    
+    <!-- SAML Logout Servlet -->
+    <servlet>
+        <servlet-name>SamlLogoutServlet</servlet-name>
+        <servlet-class>com.blps.config.SamlLogoutServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>SamlLogoutServlet</servlet-name>
+        <url-pattern>/saml/logout</url-pattern>
+    </servlet-mapping>
+    
+    <!-- JAX-RS Application -->
+    <servlet>
+        <servlet-name>RestApplication</servlet-name>
+        <servlet-class>com.blps.RestApplication</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>RestApplication</servlet-name>
+        <url-pattern>/api/*</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Session Configuration -->
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+    
+    <!-- Error Pages -->
+    <error-page>
+        <error-code>401</error-code>
+        <location>/error/unauthorized.jsp</location>
+    </error-page>
+    
+    <error-page>
+        <error-code>403</error-code>
+        <location>/error/forbidden.jsp</location>
+    </error-page>
+    
+    <error-page>
+        <error-code>500</error-code>
+        <location>/error/internal.jsp</location>
+    </error-page>
+    
+</web-app>

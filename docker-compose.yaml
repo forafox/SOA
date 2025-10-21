@@ -1,13 +1,122 @@
 version: "3.9"
+
 services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: soa-postgres
+    environment:
+      POSTGRES_DB: soa_db
+      POSTGRES_USER: soa_user
+      POSTGRES_PASSWORD: soa_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - soa-network
+    restart: unless-stopped
+
+  # Keycloak SAML Identity Provider
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: soa-keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin123
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 8082
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HTTP_ENABLED: true
+      KC_HOSTNAME_STRICT_BACKCHANNEL: false
+      KC_SPI_LOGGING_LEVEL: INFO
+      KC_SPI_LOGGING_CONSOLE_LEVEL: INFO
+    ports:
+      - "8082:8080"
+    command:
+      - start-dev
+      - --spi-logging-level=INFO
+    depends_on:
+      - postgres
+    networks:
+      - soa-network
+    restart: unless-stopped
+
+  # Backend Films (JAX-RS)
+  backend-films:
+    build:
+      context: ./backend-films
+      dockerfile: Dockerfile
+    container_name: soa-backend-films
+    environment:
+      - DB_URL=jdbc:postgresql://postgres:5432/filmsdb
+      - DB_USER=soa_user
+      - DB_PASSWORD=soa_password
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=soa-realm
+      - KEYCLOAK_CLIENT_ID=backend-films
+      - KEYCLOAK_CLIENT_SECRET=your-client-secret
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+      - keycloak
+    networks:
+      - soa-network
+    restart: unless-stopped
+
+  # Backend Oscars (Spring Boot)
   backend-oscars:
     build:
       context: ./backend-oscars
-    image: backend-oscars:local
+      dockerfile: Dockerfile
+    container_name: soa-backend-oscars
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/soa_db
+      - SPRING_DATASOURCE_USERNAME=soa_user
+      - SPRING_DATASOURCE_PASSWORD=soa_password
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=soa-realm
+      - KEYCLOAK_CLIENT_ID=backend-oscars
+      - KEYCLOAK_CLIENT_SECRET=your-client-secret
+      - MOVIES_API_BASE_URL=http://backend-films:8081/api
     ports:
       - "8080:8080"
-    environment:
-      - JAVA_OPTS=
+    depends_on:
+      - postgres
+      - keycloak
+      - backend-films
+    networks:
+      - soa-network
     restart: unless-stopped
 
+  # Frontend (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: soa-frontend
+    environment:
+      - NEXT_PUBLIC_KEYCLOAK_URL=http://localhost:8082
+      - NEXT_PUBLIC_KEYCLOAK_REALM=soa-realm
+      - NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=frontend-saml
+      - NEXT_PUBLIC_BACKEND_FILMS_URL=http://localhost:8081/api
+      - NEXT_PUBLIC_BACKEND_OSCARS_URL=http://localhost:8080
+      - NEXT_PUBLIC_APP_ORIGIN=http://localhost:3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - keycloak
+      - backend-films
+      - backend-oscars
+    networks:
+      - soa-network
+    restart: unless-stopped
 
+volumes:
+  postgres_data:
+
+networks:
+  soa-network:
+    driver: bridge

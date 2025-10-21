@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/toaster"
 import { GlobalCallbackNotifications } from "@/components/global-callback-notifications"
 import { SmartCallbackMonitor } from "@/components/smart-callback-monitor"
+import { SamlAuth } from "@/components/auth/saml-auth"
 import { Suspense } from "react"
 import "./globals.css"
 
@@ -24,7 +25,9 @@ export default function RootLayout({
     <html lang="ru">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <Suspense fallback={null}>
-          {children}
+          <SamlAuth>
+            {children}
+          </SamlAuth>
           <Toaster />
           <GlobalCallbackNotifications />
           <SmartCallbackMonitor />
