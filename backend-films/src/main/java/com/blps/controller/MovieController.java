@@ -27,12 +27,12 @@ public class MovieController {
 
     private ResponseBuilder addCorsHeaders(ResponseBuilder response) {
         return response
-                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Origin", "http://localhost:3000")
+                .header("Access-Control-Allow-Credentials", "true")
                 .header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
                 .header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
                 .header("Access-Control-Max-Age", "3600");
     }
-
     @OPTIONS
     @Path("{path:.*}")
     public Response options(@PathParam("path") String path) {

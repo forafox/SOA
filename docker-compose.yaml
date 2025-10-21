@@ -1,7 +1,6 @@
 version: "3.9"
 
 services:
-  # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
     container_name: soa-postgres
@@ -18,7 +17,6 @@ services:
       - soa-network
     restart: unless-stopped
 
-  # Keycloak SAML Identity Provider
   keycloak:
     image: quay.io/keycloak/keycloak:23.0
     container_name: soa-keycloak
@@ -43,7 +41,6 @@ services:
       - soa-network
     restart: unless-stopped
 
-  # Backend Films (JAX-RS)
   backend-films:
     build:
       context: ./backend-films
@@ -66,7 +63,6 @@ services:
       - soa-network
     restart: unless-stopped
 
-  # Backend Oscars (Spring Boot)
   backend-oscars:
     build:
       context: ./backend-oscars
@@ -91,7 +87,6 @@ services:
       - soa-network
     restart: unless-stopped
 
-  # Frontend (Next.js)
   frontend:
     build:
       context: ./frontend

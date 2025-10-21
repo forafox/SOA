@@ -30,7 +30,7 @@ export default function RootLayout({
           </SamlAuth>
           <Toaster />
           <GlobalCallbackNotifications />
-          <SmartCallbackMonitor />
+          {/* <SmartCallbackMonitor /> */}
           <Analytics />
         </Suspense>
       </body>

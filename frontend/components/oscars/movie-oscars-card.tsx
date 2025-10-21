@@ -74,15 +74,17 @@ export function MovieOscarsCard({ movies, onMoviesUpdated }: MovieOscarsCardProp
       )
 
       // Update movies list
-      const updatedMovies = movies.map((movie) => {
-        const updatedMovie = result.updatedMovies.find((um) => um.id === movie.id)
-        return updatedMovie || movie
-      })
-      onMoviesUpdated(updatedMovies)
+      if (result && result.updatedMovies) {
+        const updatedMovies = movies.map((movie) => {
+          const updatedMovie = result.updatedMovies.find((um) => um.id === movie.id)
+          return updatedMovie || movie
+        })
+        onMoviesUpdated(updatedMovies)
+      }
 
       toast({
         title: "Успех",
-        description: `Добавлено ${result.updatedCount || oscarsToAdd} Оскаров фильму "${selectedMovie?.name}"`,
+        description: `Добавлено ${result?.updatedCount || oscarsToAdd} Оскаров фильму "${selectedMovie?.name}"`,
       })
 
       setOscarsToAdd("")

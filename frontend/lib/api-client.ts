@@ -126,6 +126,26 @@ class MoviesOscarsApiClient {
     }
   }
 
+  private getAuthHeaders(): HeadersInit {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    }
+    
+    // Добавляем cookies для передачи сессии
+    if (typeof document !== 'undefined') {
+      headers['Cookie'] = document.cookie
+    }
+    
+    return headers
+  }
+
+  private getAuthOptions(): RequestInit {
+    return {
+      headers: this.getAuthHeaders(),
+      credentials: 'include' // Важно для передачи cookies
+    }
+  }
+
   // Movies API methods
   async getMovies(filters: MovieFilters = {}, pagination: PaginationParams = {}): Promise<Movie[]> {
     if (getUseMockData()) {
@@ -141,7 +161,10 @@ class MoviesOscarsApiClient {
     if (pagination.page) params.append("page", pagination.page.toString())
     if (pagination.size) params.append("size", pagination.size.toString())
 
-    const response = await fetch(`${this.moviesBaseUrl}/api/movies?${params}`)
+    const response = await fetch(`${this.moviesBaseUrl}/api/movies?${params}`, {
+      headers: this.getAuthHeaders(),
+      credentials: 'include' // Важно для передачи cookies
+    })
     return this.handleResponse<Movie[]>(response)
   }
 
@@ -150,7 +173,10 @@ class MoviesOscarsApiClient {
       return getMockMovieById(id) || null
     }
 
-    const response = await fetch(`${this.moviesBaseUrl}/api/movies/${id}`)
+    const response = await fetch(`${this.moviesBaseUrl}/api/movies/${id}`, {
+      headers: this.getAuthHeaders(),
+      credentials: 'include'
+    })
     return this.handleResponse<Movie>(response)
   }
 
@@ -199,9 +225,7 @@ class MoviesOscarsApiClient {
 
     const response = await fetch(`${this.moviesBaseUrl}/api/movies`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      ...this.getAuthOptions(),
       body: JSON.stringify(movieData),
     })
     return this.handleResponse<Movie>(response)
@@ -218,9 +242,7 @@ class MoviesOscarsApiClient {
 
     const response = await fetch(`${this.moviesBaseUrl}/api/movies/${id}`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      ...this.getAuthOptions(),
       body: JSON.stringify(data),
     })
     return this.handleResponse<Movie>(response)
@@ -237,6 +259,7 @@ class MoviesOscarsApiClient {
 
     const response = await fetch(`${this.moviesBaseUrl}/api/movies/${id}`, {
       method: "DELETE",
+      ...this.getAuthOptions(),
     })
     await this.handleResponse<void>(response)
   }
@@ -253,6 +276,7 @@ class MoviesOscarsApiClient {
 
     const response = await fetch(`${this.moviesBaseUrl}/api/movies/oscarsCount/${count}`, {
       method: "DELETE",
+      ...this.getAuthOptions(),
     })
     await this.handleResponse<void>(response)
   }
@@ -263,7 +287,7 @@ class MoviesOscarsApiClient {
       return { count: filteredCount }
     }
 
-    const response = await fetch(`${this.moviesBaseUrl}/api/movies/count/oscars-less-than/${count}`)
+    const response = await fetch(`${this.moviesBaseUrl}/api/movies/count/oscars-less-than/${count}`, this.getAuthOptions())
     return this.handleResponse<{ count: number }>(response)
   }
 
@@ -272,7 +296,7 @@ class MoviesOscarsApiClient {
       return mockMovies.filter((movie) => movie.name.toLowerCase().startsWith(prefix.toLowerCase()))
     }
 
-    const response = await fetch(`${this.moviesBaseUrl}/api/movies/name-starts-with/${encodeURIComponent(prefix)}`)
+    const response = await fetch(`${this.moviesBaseUrl}/api/movies/name-starts-with/${encodeURIComponent(prefix)}`, this.getAuthOptions())
     return this.handleResponse<Movie[]>(response)
   }
 
@@ -282,7 +306,7 @@ class MoviesOscarsApiClient {
       return [...mockOscarLosers]
     }
 
-    const response = await fetch(`${this.oscarsBaseUrl}/oscars/operators/losers`)
+    const response = await fetch(`${this.oscarsBaseUrl}/oscars/operators/losers`, this.getAuthOptions())
     return this.handleResponse<Person[]>(response)
   }
 
@@ -314,9 +338,7 @@ class MoviesOscarsApiClient {
 
     const response = await fetch(`${this.oscarsBaseUrl}/oscars/movies/honor-by-length/${minLength}?${params}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      ...this.getAuthOptions(),
       body: body ? JSON.stringify(body) : undefined,
     })
     return this.handleResponse<{ updatedCount: number; updatedMovies: Movie[] }>(response)
@@ -350,9 +372,7 @@ class MoviesOscarsApiClient {
 
     const response = await fetch(`${this.oscarsBaseUrl}/oscars/movies/honor-low-oscars?${params}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      ...this.getAuthOptions(),
       body: body ? JSON.stringify(body) : undefined,
     })
     return this.handleResponse<{ updatedCount: number; updatedMovies: Movie[] }>(response)
@@ -368,7 +388,7 @@ class MoviesOscarsApiClient {
     if (pagination.page) params.append("page", pagination.page.toString())
     if (pagination.size) params.append("size", pagination.size.toString())
 
-    const response = await fetch(`${this.oscarsBaseUrl}/oscars/movies/${movieId}?${params}`)
+    const response = await fetch(`${this.oscarsBaseUrl}/oscars/movies/${movieId}?${params}`, this.getAuthOptions())
     return this.handleResponse<OscarAward[]>(response)
   }
 
@@ -399,9 +419,7 @@ class MoviesOscarsApiClient {
 
     const response = await fetch(`${this.oscarsBaseUrl}/oscars/movies/${movieId}?${params}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      ...this.getAuthOptions(),
       body: body ? JSON.stringify(body) : undefined,
     })
     return this.handleResponse<{ updatedCount: number; updatedMovies: Movie[] }>(response)
@@ -419,6 +437,7 @@ class MoviesOscarsApiClient {
 
     const response = await fetch(`${this.oscarsBaseUrl}/oscars/movies/${movieId}`, {
       method: "DELETE",
+      ...this.getAuthOptions(),
     })
     await this.handleResponse<void>(response)
   }

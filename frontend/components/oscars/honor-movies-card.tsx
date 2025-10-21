@@ -57,15 +57,17 @@ export function HonorMoviesCard({ movies, onMoviesUpdated }: HonorMoviesCardProp
       )
 
       // Update movies list with updated movies
-      const updatedMovies = movies.map((movie) => {
-        const updatedMovie = result.updatedMovies.find((um) => um.id === movie.id)
-        return updatedMovie || movie
-      })
-      onMoviesUpdated(updatedMovies)
+      if (result && result.updatedMovies) {
+        const updatedMovies = movies.map((movie) => {
+          const updatedMovie = result.updatedMovies.find((um) => um.id === movie.id)
+          return updatedMovie || movie
+        })
+        onMoviesUpdated(updatedMovies)
+      }
 
       toast({
         title: "Успех",
-        description: `Обновлено ${result.updatedCount} фильмов`,
+        description: `Обновлено ${result?.updatedCount || 0} фильмов`,
       })
 
       setLengthForm({ minLength: "", oscarsToAdd: "" })
@@ -105,15 +107,17 @@ export function HonorMoviesCard({ movies, onMoviesUpdated }: HonorMoviesCardProp
       )
 
       // Update movies list with updated movies
-      const updatedMovies = movies.map((movie) => {
-        const updatedMovie = result.updatedMovies.find((um) => um.id === movie.id)
-        return updatedMovie || movie
-      })
-      onMoviesUpdated(updatedMovies)
+      if (result && result.updatedMovies) {
+        const updatedMovies = movies.map((movie) => {
+          const updatedMovie = result.updatedMovies.find((um) => um.id === movie.id)
+          return updatedMovie || movie
+        })
+        onMoviesUpdated(updatedMovies)
+      }
 
       toast({
         title: "Успех",
-        description: `Обновлено ${result.updatedCount} фильмов`,
+        description: `Обновлено ${result?.updatedCount || 0} фильмов`,
       })
 
       setFewOscarsForm({ maxOscars: "", oscarsToAdd: "" })
